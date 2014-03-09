@@ -12,6 +12,9 @@
 #ifndef TOR_MAIN_H
 #define TOR_MAIN_H
 
+#include "kqtime.h"
+KQTime* get_kqtime(void);
+
 int have_completed_a_circuit(void);
 void note_that_we_completed_a_circuit(void);
 void note_that_we_maybe_cant_complete_circuits(void);

@@ -4628,6 +4628,10 @@ typedef struct {
   smartlist_t *Schedulers;
   /* An ordered list of scheduler_types mapped from Schedulers. */
   smartlist_t *SchedulerTypes_;
+
+  /** if we want libkqtime to actually collect and log statistics for us */
+  char* KQTimeLogFile;
+
 } or_options_t;
 
 /** Persistent state for an onion router, as saved to disk. */

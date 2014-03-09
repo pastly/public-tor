@@ -214,6 +214,8 @@ static int can_complete_circuits = 0;
  */
 int quiet_level = 0;
 
+KQTime* global_kqtime = NULL;
+
 /********* END VARIABLES ************/
 
 /****************************************************************************
@@ -222,6 +224,10 @@ int quiet_level = 0;
  * variables (which are global within this file and unavailable outside it).
  *
  ****************************************************************************/
+
+KQTime* get_kqtime(void) {
+  return global_kqtime;
+}
 
 /** Return 1 if we have successfully built a circuit, and nothing has changed
  * to make us think that maybe we can't.
@@ -2610,6 +2616,10 @@ run_main_loop_once(void)
   if (nt_service_is_stopping())
     return 0;
 
+  if(get_options()->KQTimeLogFile) {
+    global_kqtime = kqtime_new(get_options()->KQTimeLogFile, 1, 1, 1);
+  }
+
 #ifndef _WIN32
   /* Make it easier to tell whether libevent failure is our fault or not. */
   errno = 0;
@@ -3284,6 +3294,9 @@ tor_free_all(int postfork)
   }
   /* stuff in main.c */
 
+  if(global_kqtime) {
+    kqtime_free(global_kqtime);
+  }
   smartlist_free(connection_array);
   smartlist_free(closeable_connection_lst);
   smartlist_free(active_linked_connection_lst);
