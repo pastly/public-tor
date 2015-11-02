@@ -170,15 +170,15 @@ AC_ARG_ENABLE(seccomp,
 AC_ARG_ENABLE(libscrypt,
      AS_HELP_STRING(--disable-libscrypt, [do not attempt to use libscrypt]))
 
+dnl Enable tracing with Shadow support.
 AC_ARG_ENABLE(shadow-tracing,
-     AS_HELP_STRING(--enable-shadow-tracing, build with Shadow tracing support))
-if test "$enable_shadow_tracing" = "yes"; then
-  AC_DEFINE([TOR_TRACE_SHADOW], [1], [Shadow tracing support]),
-else
-  AC_DEFINE([TOR_TRACE_SHADOW], [0], [Shadow tracing support]),
-fi
+     AS_HELP_STRING(--enable-shadow-tracing, build with Shadow tracing support)
+     AC_DEFINE([TOR_TRACE_SHADOW], [1], [Shadow tracing support]),
+     AC_DEFINE([TOR_TRACE_SHADOW], [0], [Shadow tracing support])
+)
 AM_CONDITIONAL([USE_SHADOW_TRACING], [test x$enable_shadow_tracing = xyes])
 
+dnl Enable tracing event which are transformed to debug log statement.
 AC_ARG_ENABLE(log-debug-tracing,
      AS_HELP_STRING(--enable-log-debug-tracing, build with tracing to debug log),
      AC_DEFINE([TOR_TRACE_LOG_DEBUG], [1], [Tracing event to debug logs]),
