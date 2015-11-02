@@ -170,12 +170,14 @@ AC_ARG_ENABLE(seccomp,
 AC_ARG_ENABLE(libscrypt,
      AS_HELP_STRING(--disable-libscrypt, [do not attempt to use libscrypt]))
 
-AC_ARG_ENABLE(shadow-trace,
-     AS_HELP_STRING(--enable-shadow-trace, build with Shadow tracing support))
-
-if test "x$enable_shadow_trace" != "xno"; then
-  AC_DEFINE([TOR_TRACE_SHADOW], [1], [Defined if shadow tracing events are enabled])
+AC_ARG_ENABLE(shadow-tracing,
+     AS_HELP_STRING(--enable-shadow-tracing, build with Shadow tracing support))
+if test "$enable_shadow_tracing" = "yes"; then
+  AC_DEFINE([TOR_TRACE_SHADOW], [1], [Shadow tracing support]),
+else
+  AC_DEFINE([TOR_TRACE_SHADOW], [0], [Shadow tracing support]),
 fi
+AM_CONDITIONAL([USE_SHADOW_TRACING], [test x$enable_shadow_tracing = xyes])
 
 dnl check for the correct "ar" when cross-compiling
 AN_MAKEVAR([AR], [AC_PROG_AR])

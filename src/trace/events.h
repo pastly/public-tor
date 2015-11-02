@@ -9,25 +9,34 @@
 #ifndef TOR_TRACE_EVENTS_H
 #define TOR_TRACE_EVENTS_H
 
-/* Shadow collection is enabled. */
-#ifdef TOR_TRACE_SHADOW
+/*
+ * The following defines the generic tracing function name that is used
+ * accross the whole code base. Depending on the tracing framework enabled
+ * at compile time, they are specialized accoring to the first two arguments
+ * being the subsystem and the name of the event.
+ *
+ * By default, every trace events are NOP. See doc/tracing.txt for more
+ * information on how to use tracing or add other events.
+ */
 
-/* This is the wrapper macro for declaring a tracepoint that is mapped to a
- * shadow tracepoint helper function. */
-#define DECLARE_TP(subsystem, name, data, args...) \
-  shadow_tracepoint(subsystem, name, data, ## args)
+#if TOR_TRACE_SHADOW
+
+/* Enable shadow tracing events. */
+#include "shadow.h"
+
+/* Define a specific tracing call namespaced with shadow. They MUST be
+ * defined in the shadow header in order to use them. */
+#define tor_trace(subsystem, name, args...) \
+  tor_trace_shadow_##subsystem##_##name(args)
 
 #else /* TOR_TRACE_SHADOW */
 
-/* NOP the tracepoint is nothing is enabled. */
-#define DECLARE_TP(subsystem, name, data, args...)
+/*
+ * Reaching this point, we NOP every tracing call since it was not enabled
+ * at compile time.
+ */
+#define tor_trace(subsystem, name, args...)
 
 #endif /* TOR_TRACE_SHADOW */
-
-/*
- * Trace events should be in a per subsystem header file and that header should
- * be included here so it can use the DECLARE_TP() macro above.
- */
-
 
 #endif /* TOR_TRACE_EVENTS_H */

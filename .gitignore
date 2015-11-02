@@ -122,6 +122,9 @@ uptime-*.json
 /src/Makefile
 /src/Makefile.in
 
+# /src/trace
+/src/trace/libor-trace.a
+
 # /src/common/
 /src/common/Makefile
 /src/common/Makefile.in
