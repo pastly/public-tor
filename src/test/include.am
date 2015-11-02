@@ -208,7 +208,7 @@ src_test_bench_LDADD = src/or/libtor.a src/common/libor.a \
 	src/common/libor-ctime.a \
 	src/common/libor-crypto.a $(LIBKECCAK_TINY) $(LIBDONNA) \
 	src/common/libor-event.a src/trunnel/libor-trunnel.a \
-  src/trace/libor-trace.a \
+	src/trace/libor-trace.a \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
 	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@ \
 	@TOR_SYSTEMD_LIBS@
@@ -220,7 +220,7 @@ src_test_test_workqueue_LDADD = src/or/libtor-testing.a \
 	src/common/libor-ctime-testing.a \
 	src/common/libor-crypto-testing.a $(LIBKECCAK_TINY) $(LIBDONNA) \
 	src/common/libor-event-testing.a \
-  src/trace/libor-trace.a \
+	src/trace/libor-trace.a \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
 	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
 
@@ -265,7 +265,7 @@ noinst_PROGRAMS += src/test/test-bt-cl
 src_test_test_bt_cl_SOURCES = src/test/test_bt_cl.c
 src_test_test_bt_cl_LDADD = src/common/libor-testing.a \
 	src/common/libor-ctime-testing.a \
-  src/trace/libor-trace.a \
+	src/trace/libor-trace.a \
 	@TOR_LIB_MATH@ \
 	@TOR_LIB_WS32@ @TOR_LIB_GDI@
 src_test_test_bt_cl_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
