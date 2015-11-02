@@ -179,6 +179,12 @@ else
 fi
 AM_CONDITIONAL([USE_SHADOW_TRACING], [test x$enable_shadow_tracing = xyes])
 
+AC_ARG_ENABLE(log-debug-tracing,
+     AS_HELP_STRING(--enable-log-debug-tracing, build with tracing to debug log),
+     AC_DEFINE([TOR_TRACE_LOG_DEBUG], [1], [Tracing event to debug logs]),
+     AC_DEFINE([TOR_TRACE_LOG_DEBUG], [0], [Tracing event to debug logs])
+)
+
 dnl check for the correct "ar" when cross-compiling
 AN_MAKEVAR([AR], [AC_PROG_AR])
 AN_PROGRAM([ar], [AC_PROG_AR])
