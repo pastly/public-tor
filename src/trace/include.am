@@ -10,11 +10,20 @@ TRACEHEADERS = \
 	src/trace/events.h
 
 if USE_SHADOW_TRACING
+
 TRACEHEADERS += \
   src/trace/shadow.h
 
 LIBOR_TRACE_A_SOURCES += \
   src/trace/shadow.c
+
+else
+
+if USE_LOG_DEBUG_TRACING
+
+TRACEHEADERS += \
+  src/trace/log-debug.h
+endif
 endif
 
 # Library source files.

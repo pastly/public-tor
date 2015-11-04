@@ -172,18 +172,18 @@ AC_ARG_ENABLE(libscrypt,
 
 dnl Enable tracing with Shadow support.
 AC_ARG_ENABLE(shadow-tracing,
-     AS_HELP_STRING(--enable-shadow-tracing, build with Shadow tracing support)
-     AC_DEFINE([TOR_TRACE_SHADOW], [1], [Shadow tracing support]),
-     AC_DEFINE([TOR_TRACE_SHADOW], [0], [Shadow tracing support])
-)
+     AS_HELP_STRING(--enable-shadow-tracing, build with Shadow tracing support))
 AM_CONDITIONAL([USE_SHADOW_TRACING], [test x$enable_shadow_tracing = xyes])
 
 dnl Enable tracing event which are transformed to debug log statement.
 AC_ARG_ENABLE(log-debug-tracing,
-     AS_HELP_STRING(--enable-log-debug-tracing, build with tracing to debug log),
-     AC_DEFINE([TOR_TRACE_LOG_DEBUG], [1], [Tracing event to debug logs]),
-     AC_DEFINE([TOR_TRACE_LOG_DEBUG], [0], [Tracing event to debug logs])
-)
+     AS_HELP_STRING(--enable-log-debug-tracing, build with tracing to debug log))
+AM_CONDITIONAL([USE_LOG_DEBUG_TRACING], [test x$enable_log_debug_tracing = xyes])
+
+if test x$enable_shadow_tracing = xyes ||
+   test x$enable_log_debug_tracing = xyes; then
+  AC_DEFINE([TOR_TRACING_ENABLED], [1], [Compile the tracing instrumentation])
+fi
 
 dnl check for the correct "ar" when cross-compiling
 AN_MAKEVAR([AR], [AC_PROG_AR])

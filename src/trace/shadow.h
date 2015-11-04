@@ -19,8 +19,20 @@
  *      tor_trace_shadow_circuit_##name(__VA_ARGS__)
 
  * and just declare this function above to do anything with it.
- */
 #define tor_trace_shadow(subsystem, name, ...) \
   tor_trace_shadow_##subsystem##(name, ##__VA_ARGS__)
+*/
+
+/* Crypto subsystem. */
+#define TOR_TRACE_HAS_CRYPTO
+#define tor_trace_crypto(name, ...) tor_trace_crypto_##name(__VA_ARGS__)
+
+#include <stdio.h>
+
+static inline void
+tor_trace_crypto_main(int argc, int num)
+{
+  fprintf(stderr, "argc: %d, num: %d\n", argc, num);
+}
 
 #endif /* TOR_TRACE_EVENTS_SHADOW_H */
