@@ -14,9 +14,9 @@
  * events without implementing them for a specific tracing framework. Note
  * that the arguments are ignored since at this step we do not know the
  * types and amount there is. */
-#undef tor_trace
-#define tor_trace(subsystem, name, args...) \
-  log_debug(LD_GENERAL, "Trace event \"" XSTR(name) "\" from subsystem \"" \
-                        XSTR(subsystem) "\" hit. (line " XSTR(__LINE__) ")")
+#undef tor_trace_crypto
+#define tor_trace_crypto(name, args...) \
+  log_debug(LD_GENERAL, "Trace event \"" XSTR(name) "\" from crypto " \
+                        "subsystem hit. (line " XSTR(__LINE__) ")")
 
 #endif /* TOR_TRACE_LOG_DEBUG_H */

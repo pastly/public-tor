@@ -32,6 +32,7 @@
 static inline void
 tor_trace_crypto_main(int argc, int num)
 {
+  shadow_log_crypto(...)
   fprintf(stderr, "argc: %d, num: %d\n", argc, num);
 }
 

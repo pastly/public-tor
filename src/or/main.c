@@ -3568,7 +3568,7 @@ tor_main(int argc, char *argv[])
 {
   int result = 0;
 
-  tor_trace(crypto, main, argc, 42);
+  tor_trace(crypto, im_starting_main, argc, 42, "ROb");
 
 #ifdef _WIN32
   /* Call SetProcessDEPPolicy to permanently enable DEP.
