@@ -14,7 +14,9 @@
  * events without implementing them for a specific tracing framework. Note
  * that the arguments are ignored since at this step we do not know the
  * types and amount there is. */
-#undef tor_trace_crypto
+
+/* Set that we support the crypto subsystem. */
+#define TOR_TRACE_HAS_CRYPTO
 #define tor_trace_crypto(name, args...) \
   log_debug(LD_GENERAL, "Trace event \"" XSTR(name) "\" from crypto " \
                         "subsystem hit. (line " XSTR(__LINE__) ")")

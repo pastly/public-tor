@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, The Tor Project, Inc. */
+/* Copyright (c) 2016, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -12,8 +12,8 @@
 /*
  * The following defines the generic tracing function name that is used
  * accross the whole code base. Depending on the tracing framework enabled
- * at compile time, they are specialized accoring to the first two arguments
- * being the subsystem and the name of the event.
+ * at compile time, a tracepoint is specialized accoring to the first two
+ * arguments being the subsystem and the name of the event.
  *
  * By default, every trace events are NOP. See doc/HACKING/Tracing.md for
  * more information on how to use tracing or add events.
@@ -26,8 +26,11 @@
   tor_trace_##subsystem(name, __VA_ARGS__)
 
 /* Enable shadow tracing events. */
+#ifdef USE_SHADOW_TRACING
 #include "shadow.h"
+#elif USE_LOG_DEBUG_TRACING
 #include "log-debug.h"
+#endif
 
 /* Crypto subsystem. */
 #ifndef TOR_TRACE_HAS_CRYPTO

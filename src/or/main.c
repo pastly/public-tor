@@ -102,7 +102,6 @@
 #include "status.h"
 #include "util_process.h"
 #include "ext_orport.h"
-#include "trace/events.h"
 #ifdef USE_DMALLOC
 #include <dmalloc.h>
 #include <openssl/crypto.h>
@@ -3567,8 +3566,6 @@ int
 tor_main(int argc, char *argv[])
 {
   int result = 0;
-
-  tor_trace(crypto, im_starting_main, argc, 42, "ROb");
 
 #ifdef _WIN32
   /* Call SetProcessDEPPolicy to permanently enable DEP.
