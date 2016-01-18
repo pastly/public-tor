@@ -55,6 +55,7 @@
 #include "ext_orport.h"
 #include "scheduler.h"
 #include "torcert.h"
+#include "trace/events.h"
 
 static int connection_tls_finish_handshake(or_connection_t *conn);
 static int connection_or_launch_v3_or_handshake(or_connection_t *conn);
@@ -1994,6 +1995,9 @@ connection_or_write_cell_to_buf(const cell_t *cell, or_connection_t *conn)
   cell_pack(&networkcell, cell, conn->wide_circ_ids);
 
   connection_write_to_buf(networkcell.body, cell_network_size, TO_CONN(conn));
+  /* Trace event after the cell has been writen to the conn's outbuf. */
+  tor_trace(connection, cell_write_buf, cell, cell_network_size,
+            TO_CONN(conn));
 
   /* Touch the channel's active timestamp if there is one */
   if (conn->chan)
@@ -2071,6 +2075,9 @@ connection_or_process_cells_from_inbuf(or_connection_t *conn)
       if (!var_cell)
         return 0; /* not yet. */
 
+      /* Trigger trace event once we have a valid var_cell from inbuf. */
+      tor_trace(connection, var_cell_inbuf, var_cell, TO_CONN(conn));
+
       /* Touch the channel's active timestamp if there is one */
       if (conn->chan)
         channel_timestamp_active(TLS_CHAN_TO_BASE(conn->chan));
@@ -2097,6 +2104,8 @@ connection_or_process_cells_from_inbuf(or_connection_t *conn)
       /* retrieve cell info from buf (create the host-order struct from the
        * network-order string) */
       cell_unpack(&cell, buf, wide_circ_ids);
+      /* Trigger trace event once we have a valid cell from inbuf. */
+      tor_trace(connection, cell_inbuf, &cell, TO_CONN(conn));
 
       channel_tls_handle_cell(&cell, conn);
     }

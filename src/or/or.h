@@ -1107,6 +1107,9 @@ typedef struct cell_t {
   uint8_t command; /**< Type of the cell: one of CELL_PADDING, CELL_CREATE,
                     * CELL_DESTROY, etc */
   uint8_t payload[CELL_PAYLOAD_SIZE]; /**< Cell body. */
+#ifdef TOR_TRACING_ENABLED
+  uint32_t id;
+#endif /* TOR_TRACING_ENABLED */
 } cell_t;
 
 /** Parsed variable-length onion routing cell. */
@@ -1115,6 +1118,9 @@ typedef struct var_cell_t {
   uint8_t command;
   /** Circuit thich received the cell */
   circid_t circ_id;
+#ifdef TOR_TRACING_ENABLED
+  uint32_t id;
+#endif /* TOR_TRACING_ENABLED */
   /** Number of bytes actually stored in <b>payload</b> */
   uint16_t payload_len;
   /** Payload of this cell */
@@ -1135,6 +1141,9 @@ typedef struct packed_cell_t {
   char body[CELL_MAX_NETWORK_SIZE]; /**< Cell as packed for network. */
   uint32_t inserted_time; /**< Time (in milliseconds since epoch, with high
                            * bits truncated) when this cell was inserted. */
+#ifdef TOR_TRACING_ENABLED
+  uint32_t id;
+#endif /* TOR_TRACING_ENABLED */
 } packed_cell_t;
 
 /** A queue of cells on a circuit, waiting to be added to the

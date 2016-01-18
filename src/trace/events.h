@@ -32,19 +32,19 @@
 #include "log-debug.h"
 #endif
 
-/* Crypto subsystem. */
-#ifndef TOR_TRACE_HAS_CRYPTO
-#define tor_trace_crypto(name, ...)
+/* Connection subsystem. */
+#ifndef TOR_TRACE_HAS_CONNECTION
+#define tor_trace_connection(name, ...)
 #endif
 
 #else /* TOR_TRACING_ENABLED */
 
 /*
- * Reaching this point, we NOP every tracing call since it was not enabled
- * at compile time.
+ * Reaching this point, we NOP every tracing declaration because tracing has
+ * not been enabled at compile time.
  */
 #define tor_trace(subsystem, name, args...)
 
-#endif /* TOR_TRACE_SHADOW */
+#endif /* TOR_TRACING_ENABLED */
 
 #endif /* TOR_TRACE_EVENTS_H */
