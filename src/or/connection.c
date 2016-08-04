@@ -4019,6 +4019,7 @@ connection_write_to_buf_impl_,(const char *string, size_t len,
   if (conn->marked_for_close && !conn->hold_open_until_flushed)
     return;
 
+  tor_trace(connection, write_to_buf, len);
   old_datalen = buf_datalen(conn->outbuf);
   if (zlib) {
     dir_connection_t *dir_conn = TO_DIR_CONN(conn);

@@ -74,6 +74,7 @@
 #include "routerlist.h"
 #include "routerparse.h"
 #include "scheduler.h"
+#include "trace/events.h"
 
 static edge_connection_t *relay_lookup_conn(circuit_t *circ, cell_t *cell,
                                             cell_direction_t cell_direction,
@@ -2336,6 +2337,9 @@ packed_cell_copy(const cell_t *cell, int wide_circ_ids)
 {
   packed_cell_t *c = packed_cell_new();
   cell_pack(c, cell, wide_circ_ids);
+#ifdef TOR_TRACING_ENABLED
+  c->id = cell->id;
+#endif /* TOR_TRACING_ENABLED */
   return c;
 }
 
@@ -2356,7 +2360,11 @@ cell_queue_append_packed_copy(circuit_t *circ, cell_queue_t *queue,
                               int exitward, const cell_t *cell,
                               int wide_circ_ids, int use_stats)
 {
+  struct timeval now;
+  //tor_trace(relay, appended, cell);
   packed_cell_t *copy = packed_cell_copy(cell, wide_circ_ids);
+  copy->id = cell->id;
+  tor_trace(relay, appended, copy);
   (void)circ;
   (void)exitward;
   (void)use_stats;
@@ -2861,6 +2869,7 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
   }
 #endif
 
+  tor_trace(relay, about_to_append, cell);
   cell_queue_append_packed_copy(circ, queue, exitward, cell,
                                 chan->wide_circ_ids, 1);
 

@@ -37,6 +37,15 @@
 #define tor_trace_connection(name, ...)
 #endif
 
+#ifndef TOR_TRACE_HAS_CHANNEL
+#define tor_trace_channel(name, ...)
+#endif
+
+
+#ifndef TOR_TRACE_HAS_RELAY
+#define tor_trace_relay(name, ...)
+#endif
+
 #else /* TOR_TRACING_ENABLED */
 
 /*

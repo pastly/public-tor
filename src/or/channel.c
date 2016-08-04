@@ -63,6 +63,7 @@
 #include "router.h"
 #include "routerlist.h"
 #include "scheduler.h"
+#include "trace/events.h"
 
 /* Global lists of channels */
 
@@ -1822,16 +1823,19 @@ channel_write_cell_queue_entry(channel_t *chan, cell_queue_entry_t *q)
       case CELL_QUEUE_FIXED:
         tor_assert(chan->write_cell);
         tor_assert(q->u.fixed.cell);
+        tor_trace(channel, write_cell_queue_entry_fixed, q->u.fixed.cell);
         result = chan->write_cell(chan, q->u.fixed.cell);
         break;
       case CELL_QUEUE_PACKED:
         tor_assert(chan->write_packed_cell);
         tor_assert(q->u.packed.packed_cell);
+        tor_trace(channel, write_cell_queue_entry_packed, q->u.packed.packed_cell);
         result = chan->write_packed_cell(chan, q->u.packed.packed_cell);
         break;
       case CELL_QUEUE_VAR:
         tor_assert(chan->write_var_cell);
         tor_assert(q->u.var.var_cell);
+        tor_trace(channel, write_cell_queue_entry_var, q->u.var.var_cell);
         result = chan->write_var_cell(chan, q->u.var.var_cell);
         break;
       default:
@@ -2716,6 +2720,7 @@ channel_process_cells(channel_t *chan)
                 U64_FORMAT ")",
                 q->u.fixed.cell, chan,
                 U64_PRINTF_ARG(chan->global_identifier));
+      tor_trace(channel, process_cells_fixed, q->u.fixed.cell);
       chan->cell_handler(chan, q->u.fixed.cell);
       tor_free(q->u.fixed.cell);
       tor_free(q);
@@ -2729,9 +2734,12 @@ channel_process_cells(channel_t *chan)
                 U64_FORMAT ")",
                 q->u.var.var_cell, chan,
                 U64_PRINTF_ARG(chan->global_identifier));
+      tor_trace(channel, process_cells_var, q->u.var.var_cell);
       chan->var_cell_handler(chan, q->u.var.var_cell);
       tor_free(q->u.var.var_cell);
       tor_free(q);
+    } else if (q->type == CELL_QUEUE_PACKED) {
+      tor_trace(channel, process_cells_packed, q->u.packed.packed_cell);
     } else {
       /* Can't handle this one */
       break;
@@ -2749,6 +2757,7 @@ channel_process_cells(channel_t *chan)
 void
 channel_queue_cell(channel_t *chan, cell_t *cell)
 {
+  tor_trace(channel, queue_cell, cell);
   int need_to_queue = 0;
   cell_queue_entry_t *q;
   cell_t *cell_copy = NULL;
@@ -2791,6 +2800,7 @@ channel_queue_cell(channel_t *chan, cell_t *cell)
      */
     cell_copy = tor_malloc_zero(sizeof(cell_t));
     memcpy(cell_copy, cell, sizeof(cell_t));
+    tor_trace(channel, queue_cell_need_to_queue, cell_copy);
     q = cell_queue_entry_new_fixed(cell_copy);
     log_debug(LD_CHANNEL,
               "Queueing incoming cell_t %p for channel %p "

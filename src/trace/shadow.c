@@ -4,12 +4,18 @@
 #include "shadow.h"
 
 #include "buffers.h"
+#include "or.h"
 
 /* In tracing mode, a cell and var cell data structure have an ID field.
  * This is a global counter indicating the next ID a cell should get. It is
  * incremented every time the inbuf trace event is hit for either types. */
 static uint32_t var_cell_next_id = 1;
 static uint32_t cell_next_id = 1;
+
+/* This value determines what cell IDs get traced. Essentially, if
+ * cellid % TRACE_EVERY_N_CELLS == 0, then it will be traced. This cuts down
+ * on log spam. Every cell gets an id, but only some get logged. */
+#define TRACE_EVERY_N_CELLS 1
 
 static digest256map_t *connections;
 
@@ -53,7 +59,7 @@ void
 tor_trace_connection_var_cell_inbuf(var_cell_t *cell, connection_t *conn)
 {
   cell->id = var_cell_next_id++;
-  shadow_log(LD_OR, "var_cell_t id %" PRIu32 " read from "
+  shadow_log(LD_OR, "id=%" PRIu32 " read from "
                     "connection %" PRIu64 " inbuf",
              cell->id, conn->global_identifier);
 }
@@ -63,7 +69,8 @@ void
 tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
 {
   cell->id = cell_next_id++;
-  shadow_log(LD_OR, "cell_t id %" PRIu32 " read from "
+  if (cell->id % TRACE_EVERY_N_CELLS != 0) return;
+  shadow_log(LD_OR, "id=%" PRIu32 " read from "
                     "connection %" PRIu64 " inbuf",
              cell->id, conn->global_identifier);
 }
@@ -72,6 +79,7 @@ void
 tor_trace_connection_cell_write_buf(const cell_t *cell, size_t cell_len,
                                     connection_t *conn)
 {
+  shadow_log(LD_OR, "id=%" PRIu32, cell->id);
   uint8_t key[DIGEST256_LEN] = {0};
   digest256map_t *infos;
   size_t outbuf_len = buf_datalen(conn->outbuf);
@@ -145,4 +153,98 @@ tor_trace_connection_cell_flush_buf(const connection_t *conn,
       MAP_DEL_CURRENT(k);
     }
   } DIGEST256MAP_FOREACH_END;
+}
+
+void tor_trace_channel_queue_cell(const cell_t *cell)
+{
+	//shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_queue_cell_need_to_queue(const cell_t *cell)
+{
+	//shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_process_cells()
+{
+	shadow_log(LD_OR, "");
+}
+
+void tor_trace_channel_process_cells_fixed(const cell_t *cell)
+{
+	shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_process_cells_var(const var_cell_t *cell)
+{
+	shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_process_cells_packed(const packed_cell_t *cell)
+{
+	shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_tls_write_cell(const cell_t *cell)
+{
+	shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_tls_write_var_cell(const var_cell_t *cell)
+{
+	shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_tls_write_packed_cell(const packed_cell_t *cell)
+{
+	if (cell->id == 48)
+	{
+		uint8_t command;
+		char *fixed_cell = cell->body;
+		fixed_cell += 2;
+		command = get_uint8(fixed_cell);
+		shadow_log(LD_OR, "FOOBAR id=48 command=%" PRIu8, command);
+		fixed_cell += 2;
+		command = get_uint8(fixed_cell);
+		shadow_log(LD_OR, "FOOBAR id=48 command=%" PRIu8, command);
+		shadow_log(LD_OR, "FOOBAR");
+	}
+	if (cell->id % TRACE_EVERY_N_CELLS != 0) return;
+	shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_write_cell_queue_entry_fixed(const cell_t *cell)
+{
+    shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_write_cell_queue_entry_var(const var_cell_t *cell)
+{
+    shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_channel_write_cell_queue_entry_packed(const packed_cell_t *cell)
+{
+    //shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+
+void tor_trace_command_process_relay_cell(const cell_t *cell)
+{
+	//shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_connection_write_to_buf(const size_t len)
+{
+	shadow_log(LD_OR, "len=%lu", len);
+}
+
+void tor_trace_relay_about_to_append(const cell_t *cell)
+{
+	//shadow_log(LD_OR, "id=%" PRIu32, cell->id);
+}
+
+void tor_trace_relay_appended(const packed_cell_t *cell)
+{
+	//shadow_log(LD_OR, "id=%" PRIu32, cell->id);
 }
