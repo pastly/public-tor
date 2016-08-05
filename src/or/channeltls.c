@@ -811,7 +811,6 @@ channel_tls_write_cell_method(channel_t *chan, cell_t *cell)
              chan, U64_PRINTF_ARG(chan->global_identifier));
   }
 
-  //tor_trace(channel_tls, write_cell, cell);
   return written;
 }
 
@@ -879,7 +878,6 @@ channel_tls_write_var_cell_method(channel_t *chan, var_cell_t *var_cell)
              chan, U64_PRINTF_ARG(chan->global_identifier));
   }
 
-  //tor_trace(channel_tls, write_var_cell, var_cell);
   return written;
 }
 

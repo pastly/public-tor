@@ -425,13 +425,7 @@ cell_pack(packed_cell_t *dst, const cell_t *src, int wide_circ_ids)
     memset(dest+CELL_MAX_NETWORK_SIZE-2, 0, 2); /*make sure it's clear */
   }
   set_uint8(dest, src->command);
-  //dest += 1;
-  //memcpy(dest, src->payload, CELL_PAYLOAD_SIZE);
   memcpy(dest+1, src->payload, CELL_PAYLOAD_SIZE);
-//#ifdef TOR_TRACING_ENABLED
-//  dest += CELL_PAYLOAD_SIZE;
-//  set_uint32(dest, src->id);
-//#endif /* TOR_TRACING_ENABLED */
 }
 
 /** Unpack the network-order buffer <b>src</b> into a host-order
@@ -481,9 +475,9 @@ var_cell_new(uint16_t payload_len)
   cell->payload_len = payload_len;
   cell->command = 0;
   cell->circ_id = 0;
-#ifdef TOR_TRACING_ENABLED
+#ifdef USE_SHADOW_TRACING
   cell->id = 0;
-#endif /* TOR_TRACING_ENABLED */
+#endif /* USE_SHADOW_TRACING */
   return cell;
 }
 
@@ -2005,13 +1999,10 @@ connection_or_write_cell_to_buf(const cell_t *cell, or_connection_t *conn)
   tor_assert(conn);
 
   cell_pack(&networkcell, cell, conn->wide_circ_ids);
-#ifdef TOR_TRACING_ENABLED
+#ifdef USE_SHADOW_TRACING
   networkcell.id = cell->id;
-#endif /* TOR_TRACING_ENABLED */
+#endif /* USE_SHADOW_TRACING */
   connection_write_to_buf(networkcell.body, cell_network_size, TO_CONN(conn));
-  /* Trace event after the cell has been writen to the conn's outbuf. */
-  //tor_trace(connection, cell_write_buf, cell, cell_network_size,
-  //          TO_CONN(conn));
 
   /* Touch the channel's active timestamp if there is one */
   if (conn->chan)
@@ -2089,9 +2080,6 @@ connection_or_process_cells_from_inbuf(or_connection_t *conn)
       if (!var_cell)
         return 0; /* not yet. */
 
-      /* Trigger trace event once we have a valid var_cell from inbuf. */
-      //tor_trace(connection, var_cell_inbuf, var_cell, TO_CONN(conn));
-
       /* Touch the channel's active timestamp if there is one */
       if (conn->chan)
         channel_timestamp_active(TLS_CHAN_TO_BASE(conn->chan));
@@ -2120,7 +2108,6 @@ connection_or_process_cells_from_inbuf(or_connection_t *conn)
       cell_unpack(&cell, buf, wide_circ_ids);
       /* Trigger trace event once we have a valid cell from inbuf. */
       tor_trace(connection, cell_inbuf, &cell, TO_CONN(conn));
-      //tor_trace(connection, test, &cell); // cell has id here
 
       channel_tls_handle_cell(&cell, conn);
     }

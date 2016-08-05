@@ -1507,9 +1507,9 @@ onionskin_answer(or_circuit_t *circ,
 
   circ->is_first_hop = (created_cell->cell_type == CELL_CREATED_FAST);
 
-#ifdef TOR_TRACING_ENABLED
+#ifdef USE_SHADOW_TRACING
   cell.id = 0;
-#endif /* TOR_TRACING_ENABLED */
+#endif /* USE_SHADOW_TRACING */
 
   append_cell_to_circuit_queue(TO_CIRCUIT(circ),
                                circ->p_chan, &cell, CELL_DIRECTION_IN, 0);

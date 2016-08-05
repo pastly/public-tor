@@ -121,10 +121,6 @@
 #include <systemd/sd-daemon.h>
 #endif
 
-#ifdef TOR_TRACING_ENABLED
-#include "trace/events.h"
-#endif /* TOR_TRACING_ENABLED */
-
 void evdns_shutdown(int);
 
 /********* PROTOTYPES **********/
