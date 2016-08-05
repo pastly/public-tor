@@ -2363,10 +2363,9 @@ cell_queue_append_packed_copy(circuit_t *circ, cell_queue_t *queue,
   struct timeval now;
   //tor_trace(relay, appended, cell);
   packed_cell_t *copy = packed_cell_copy(cell, wide_circ_ids);
-#ifdef TOR_TRACING_ENABLED
+#ifdef USE_SHADOW_TRACING
   copy->id = cell->id;
-#endif /* TOR_TRACING_ENABLED
-  tor_trace(relay, appended, copy);
+#endif /* USE_SHADOW_TRACING */
   (void)circ;
   (void)exitward;
   (void)use_stats;
