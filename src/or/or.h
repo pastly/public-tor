@@ -4603,6 +4603,7 @@ typedef struct {
    * we should remove it entirely.
    */
   int UseDeprecatedGuardAlgorithm;
+  int ShadowTraceEveryNCells;
 } or_options_t;
 
 /** Persistent state for an onion router, as saved to disk. */

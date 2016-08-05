@@ -3017,7 +3017,7 @@ connection_buckets_decrement(connection_t *conn, time_t now,
     tor_fragile_assert();
   }
 
-  tor_trace(connection, cell_flush_buf, conn, num_written);
+  //tor_trace(connection, cell_flush_buf, conn, num_written);
 
   record_num_bytes_transferred_impl(conn, now, num_read, num_written);
 
@@ -4019,7 +4019,7 @@ connection_write_to_buf_impl_,(const char *string, size_t len,
   if (conn->marked_for_close && !conn->hold_open_until_flushed)
     return;
 
-  tor_trace(connection, write_to_buf, len);
+  //tor_trace(connection, write_to_buf, len);
   old_datalen = buf_datalen(conn->outbuf);
   if (zlib) {
     dir_connection_t *dir_conn = TO_DIR_CONN(conn);

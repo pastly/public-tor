@@ -2010,8 +2010,8 @@ connection_or_write_cell_to_buf(const cell_t *cell, or_connection_t *conn)
 #endif /* TOR_TRACING_ENABLED */
   connection_write_to_buf(networkcell.body, cell_network_size, TO_CONN(conn));
   /* Trace event after the cell has been writen to the conn's outbuf. */
-  tor_trace(connection, cell_write_buf, cell, cell_network_size,
-            TO_CONN(conn));
+  //tor_trace(connection, cell_write_buf, cell, cell_network_size,
+  //          TO_CONN(conn));
 
   /* Touch the channel's active timestamp if there is one */
   if (conn->chan)
@@ -2090,7 +2090,7 @@ connection_or_process_cells_from_inbuf(or_connection_t *conn)
         return 0; /* not yet. */
 
       /* Trigger trace event once we have a valid var_cell from inbuf. */
-      tor_trace(connection, var_cell_inbuf, var_cell, TO_CONN(conn));
+      //tor_trace(connection, var_cell_inbuf, var_cell, TO_CONN(conn));
 
       /* Touch the channel's active timestamp if there is one */
       if (conn->chan)

@@ -121,6 +121,10 @@
 #include <systemd/sd-daemon.h>
 #endif
 
+#ifdef TOR_TRACING_ENABLED
+#include "trace/events.h"
+#endif /* TOR_TRACING_ENABLED */
+
 void evdns_shutdown(int);
 
 /********* PROTOTYPES **********/
@@ -3619,6 +3623,9 @@ tor_main(int argc, char *argv[])
   }
 
   monotime_init();
+#ifdef USE_SHADOW_TRACING
+  shadow_tracing_init();
+#endif
 
   switch (get_options()->command) {
   case CMD_RUN_TOR:

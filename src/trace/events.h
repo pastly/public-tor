@@ -20,7 +20,7 @@
  */
 
 #ifdef TOR_TRACING_ENABLED
-
+#include "common/torlog.h"
 /* Map every trace event to a per subsystem macro. */
 #define tor_trace(subsystem, name, ...) \
   tor_trace_##subsystem(name, __VA_ARGS__)

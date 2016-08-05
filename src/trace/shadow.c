@@ -5,6 +5,7 @@
 
 #include "buffers.h"
 #include "or.h"
+#include "config.h"
 
 /* In tracing mode, a cell and var cell data structure have an ID field.
  * This is a global counter indicating the next ID a cell should get. It is
@@ -13,9 +14,10 @@ static uint32_t var_cell_next_id = 1;
 static uint32_t cell_next_id = 1;
 
 /* This value determines what cell IDs get traced. Essentially, if
- * cellid % TRACE_EVERY_N_CELLS == 0, then it will be traced. This cuts down
+ * cellid % ShadowTraceEveryNCells == 0, then it will be traced. This cuts down
  * on log spam. Every cell gets an id, but only some get logged. */
-#define TRACE_EVERY_N_CELLS 1
+
+int ShadowTraceEveryNCells;
 
 static digest256map_t *connections;
 
@@ -54,6 +56,11 @@ trace_add_ts(void)
   return "";
 }
 
+void shadow_tracing_init()
+{
+	ShadowTraceEveryNCells = get_options()->ShadowTraceEveryNCells;
+}
+
 /* Trace event hit when a var_cell_t is read from inbuf. */
 void
 tor_trace_connection_var_cell_inbuf(var_cell_t *cell, connection_t *conn)
@@ -69,7 +76,7 @@ void
 tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
 {
   cell->id = cell_next_id++;
-  if (cell->id % TRACE_EVERY_N_CELLS != 0) return;
+  if (cell->id % ShadowTraceEveryNCells != 0) return;
   shadow_log(LD_OR, "id=%" PRIu32 " read from "
                     "connection %" PRIu64 " inbuf",
              cell->id, conn->global_identifier);
@@ -197,19 +204,7 @@ void tor_trace_channel_tls_write_var_cell(const var_cell_t *cell)
 
 void tor_trace_channel_tls_write_packed_cell(const packed_cell_t *cell)
 {
-	if (cell->id == 48)
-	{
-		uint8_t command;
-		char *fixed_cell = cell->body;
-		fixed_cell += 2;
-		command = get_uint8(fixed_cell);
-		shadow_log(LD_OR, "FOOBAR id=48 command=%" PRIu8, command);
-		fixed_cell += 2;
-		command = get_uint8(fixed_cell);
-		shadow_log(LD_OR, "FOOBAR id=48 command=%" PRIu8, command);
-		shadow_log(LD_OR, "FOOBAR");
-	}
-	if (cell->id % TRACE_EVERY_N_CELLS != 0) return;
+	if (cell->id % ShadowTraceEveryNCells != 0) return;
 	shadow_log(LD_OR, "id=%" PRIu32, cell->id);
 }
 
