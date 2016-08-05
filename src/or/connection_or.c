@@ -1925,7 +1925,7 @@ or_handshake_state_record_cell(or_connection_t *conn,
   /* Re-packing like this is a little inefficient, but we don't have to do
      this very often at all. */
   cell_pack(&packed, cell, conn->wide_circ_ids);
-#ifdef TOR_TRACING_ENABLED
+#ifdef USE_SHADOW_TRACING
   packed.id = cell->id;
 #endif /* USE_SHADOW_TRACING */
   crypto_digest_add_bytes(d, packed.body, cell_network_size);
