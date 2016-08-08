@@ -97,6 +97,7 @@
 #include "routerparse.h"
 #include "sandbox.h"
 #include "transports.h"
+#include "trace/events.h"
 
 #ifdef HAVE_PWD_H
 #include <pwd.h>
@@ -3874,6 +3875,7 @@ connection_handle_write_impl(connection_t *conn, int force)
      * the *_buf_tls functions, we should make them return ssize_t or size_t
      * or something. */
     result = (int)(initial_size-buf_datalen(conn->outbuf));
+    tor_trace(connection, write_to_buf_flushed, conn, result);
   } else {
     CONN_LOG_PROTECT(conn,
              result = flush_buf(conn->s, conn->outbuf,
@@ -4026,6 +4028,7 @@ connection_write_to_buf_impl_,(const char *string, size_t len,
                                                  string, len, done));
   } else {
     CONN_LOG_PROTECT(conn, r = write_to_buf(string, len, conn->outbuf));
+    //tor_trace(connection, write_to_buf, conn, old_datalen, r, len);
   }
   if (r < 0) {
     if (CONN_IS_EDGE(conn)) {
