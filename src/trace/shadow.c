@@ -93,7 +93,7 @@ void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_ce
 	shadow_log(LD_OR, "id=%" PRIu32 " added to our state for "
 			"conn=%" PRIu64,
 			c_info->id, conn->global_identifier);
-	shadow_log(LD_OR, "\tid=%" PRIu32 " outbufpos=%d", cell->id, c_info->outbuf_pos);
+	shadow_log(LD_OR, "id=%" PRIu32 " outbufpos=%d", cell->id, c_info->outbuf_pos);
 }
 
 void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
@@ -132,7 +132,7 @@ void tor_trace_connection_write_to_buf_flushed(connection_t *conn, int amount)
 				c_info->id, c_info->outbuf_pos + amount,
 				c_info->outbuf_pos, conn->global_identifier);
 		if (c_info->outbuf_pos <= 0) {
-			shadow_log(LD_OR, "\tid=%" PRIu32 " written to kernel "
+			shadow_log(LD_OR, "id=%" PRIu32 " written to kernel "
 					"for conn=%" PRIu64,
 					c_info->id, conn->global_identifier);
 			tor_free(c_info);
