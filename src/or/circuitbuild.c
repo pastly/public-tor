@@ -1509,6 +1509,7 @@ onionskin_answer(or_circuit_t *circ,
 
 #ifdef USE_SHADOW_TRACING
   cell.id = 0;
+  cell.ts.tv_sec = cell.ts.tv_nsec = 0;
 #endif /* USE_SHADOW_TRACING */
 
   append_cell_to_circuit_queue(TO_CIRCUIT(circ),

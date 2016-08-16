@@ -1924,6 +1924,7 @@ or_handshake_state_record_cell(or_connection_t *conn,
   cell_pack(&packed, cell, conn->wide_circ_ids);
 #ifdef USE_SHADOW_TRACING
   packed.id = cell->id;
+  packed.ts = cell->ts;
 #endif /* USE_SHADOW_TRACING */
   crypto_digest_add_bytes(d, packed.body, cell_network_size);
   memwipe(&packed, 0, sizeof(packed));
@@ -1998,6 +1999,7 @@ connection_or_write_cell_to_buf(const cell_t *cell, or_connection_t *conn)
   cell_pack(&networkcell, cell, conn->wide_circ_ids);
 #ifdef USE_SHADOW_TRACING
   networkcell.id = cell->id;
+  networkcell.ts = cell->ts;
 #endif /* USE_SHADOW_TRACING */
   connection_write_to_buf(networkcell.body, cell_network_size, TO_CONN(conn));
 

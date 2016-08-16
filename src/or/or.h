@@ -1109,6 +1109,7 @@ typedef struct cell_t {
   uint8_t payload[CELL_PAYLOAD_SIZE]; /**< Cell body. */
 #ifdef USE_SHADOW_TRACING
   uint32_t id;
+  struct timespec ts;
 #endif /* USE_SHADOW_TRACING */
 } cell_t;
 
@@ -1140,6 +1141,7 @@ typedef struct packed_cell_t {
                            * bits truncated) when this cell was inserted. */
 #ifdef USE_SHADOW_TRACING
   uint32_t id;
+  struct timespec ts;
 #endif /* USE_SHADOW_TRACING */
 } packed_cell_t;
 

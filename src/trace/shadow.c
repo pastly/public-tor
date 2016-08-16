@@ -7,20 +7,23 @@
 #include "or.h"
 #include "config.h"
 
-/* In tracing mode, a cell and var cell data structure have an ID field.
+/* In tracing mode, a cell data structure has an ID field.
  * This is a global counter indicating the next ID a cell should get. It is
- * incremented every time the inbuf trace event is hit for either types. */
+ * incremented every time the inbuf trace event is hit and
+ * cell_counter == ShadowTraceEveryNCells. */
 static uint32_t cell_next_id = 1;
-
-/* This value determines what cell IDs get traced. Essentially, if
- * cellid % ShadowTraceEveryNCells == 0, then it will be traced. This cuts down
- * on log spam. Every cell gets an id, but only some get logged. */
-int ShadowTraceEveryNCells;
+/* This value reduces the number of cells that get traced. We count cells until
+ * the counter reaches ShadowTraceEveryNCells, at which point we increment and
+ * assign the cell a non-zero id. We also attach a non-zero timestamp. This
+ * cuts down on log spam. */
+static int ShadowTraceEveryNCells;
+static int cell_counter;
 
 static digest256map_t *connections;
 
 struct cell_info {
   uint32_t id;
+  struct timespec ts;
   ssize_t outbuf_pos;
 };
 
@@ -54,17 +57,20 @@ trace_add_ts(void)
   return "";
 }
 
-void shadow_tracing_init() {ShadowTraceEveryNCells = get_options()->ShadowTraceEveryNCells;}
+void shadow_tracing_init()
+{
+	ShadowTraceEveryNCells = get_options()->ShadowTraceEveryNCells;
+	cell_counter = 0;
+}
 
 void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_cell_t *cell, int wide_circ_ids)
 {
+	if (cell->id < 1) return;
+
 	uint8_t key[DIGEST256_LEN] = {0};
 	digest256map_t *infos;
 	size_t outbuf_len = buf_datalen(conn->outbuf);
 	struct cell_info *c_info;
-
-	if (cell->id < 1) return;
-	if (cell->id % ShadowTraceEveryNCells != 0) return;
 
 	if (connections == NULL) {
 		connections = digest256map_new();
@@ -88,22 +94,25 @@ void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_ce
 	}
 	c_info = tor_malloc_zero(sizeof(struct cell_info));
 	c_info->id = cell->id;
+	c_info->ts = cell->ts;
 	c_info->outbuf_pos = outbuf_len + get_cell_network_size(wide_circ_ids);
 	digest256map_set(infos, key, c_info);
-	shadow_log(LD_OR, "id=%" PRIu32 " added to our state for "
-			"conn=%" PRIu64,
-			c_info->id, conn->global_identifier);
-	shadow_log(LD_OR, "id=%" PRIu32 " outbufpos=%d", cell->id, c_info->outbuf_pos);
+	shadow_log(LD_OR, "%lu.%lu id=%" PRIu32, c_info->ts.tv_sec, c_info->ts.tv_nsec, c_info->id);
 }
 
 void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
 {
-  cell->id = cell_next_id++;
-  if (cell->id % ShadowTraceEveryNCells != 0) return;
-  shadow_log(LD_OR, "id=%" PRIu32 " read from "
-                    "connection %" PRIu64 " inbuf",
-             cell->id, conn->global_identifier);
-}
+	if (++cell_counter >= ShadowTraceEveryNCells) {
+		int result = clock_gettime(CLOCK_REALTIME, &(cell->ts));
+		if (result < 0) cell->ts.tv_sec = cell->ts.tv_nsec = 0;
+		cell->id = cell_next_id++;
+		cell_counter -= ShadowTraceEveryNCells;
+		shadow_log(LD_OR, "%lu.%lu id=%" PRIu32, cell->ts.tv_sec, cell->ts.tv_nsec, cell->id);
+	} else {
+		cell->id = 0;
+		cell->ts.tv_sec = cell->ts.tv_nsec = 0;
+	}
+} 
 
 void tor_trace_connection_write_to_buf(connection_t *conn, size_t oldbufsize, int newbufsize, size_t cellsize)
 {
@@ -127,14 +136,12 @@ void tor_trace_connection_write_to_buf_flushed(connection_t *conn, int amount)
 	/* Go over all cells and update bytes written. */
 	DIGEST256MAP_FOREACH_MODIFY(infos, k, struct cell_info *, c_info) {
 		c_info->outbuf_pos -= amount;
-		shadow_log(LD_OR, "id=%" PRIu32 " outbuf pos changed from %d "
-				"to %d for conn=%" PRIu64,
-				c_info->id, c_info->outbuf_pos + amount,
-				c_info->outbuf_pos, conn->global_identifier);
+		//shadow_log(LD_OR, "id=%" PRIu32 " outbuf pos changed from %d "
+		//		"to %d for conn=%" PRIu64,
+		//		c_info->id, c_info->outbuf_pos + amount,
+		//		c_info->outbuf_pos, conn->global_identifier);
 		if (c_info->outbuf_pos <= 0) {
-			shadow_log(LD_OR, "id=%" PRIu32 " written to kernel "
-					"for conn=%" PRIu64,
-					c_info->id, conn->global_identifier);
+			shadow_log(LD_OR, "%lu.%lu id=%" PRIu32 " written to kernel", c_info->ts.tv_sec, c_info->ts.tv_nsec, c_info->id);
 			tor_free(c_info);
 			MAP_DEL_CURRENT(k);
 		}
