@@ -475,9 +475,6 @@ var_cell_new(uint16_t payload_len)
   cell->payload_len = payload_len;
   cell->command = 0;
   cell->circ_id = 0;
-#ifdef USE_SHADOW_TRACING
-  cell->id = 0;
-#endif /* USE_SHADOW_TRACING */
   return cell;
 }
 

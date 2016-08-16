@@ -1118,9 +1118,6 @@ typedef struct var_cell_t {
   uint8_t command;
   /** Circuit thich received the cell */
   circid_t circ_id;
-#ifdef USE_SHADOW_TRACING
-  uint32_t id;
-#endif /* USE_SHADOW_TRACING */
   /** Number of bytes actually stored in <b>payload</b> */
   uint16_t payload_len;
   /** Payload of this cell */
