@@ -19,7 +19,7 @@ void shadow_tracing_init();
 
 /* Helper function: standardize message for the trace output. */
 #define shadow_log(domain, fmt, args...) \
-  log_info(domain, "[shadow] %s: " fmt "\n", trace_add_ts(), ## args);
+  log_info(domain, "[shadow]: " fmt "\n", ## args);
 
 /*
  * For instance, to NOP the "circuit" subsystem, simply define this:
