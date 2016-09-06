@@ -4028,7 +4028,6 @@ connection_write_to_buf_impl_,(const char *string, size_t len,
                                                  string, len, done));
   } else {
     CONN_LOG_PROTECT(conn, r = write_to_buf(string, len, conn->outbuf));
-    //tor_trace(connection, write_to_buf, conn, old_datalen, r, len);
   }
   if (r < 0) {
     if (CONN_IS_EDGE(conn)) {

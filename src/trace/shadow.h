@@ -19,8 +19,11 @@ void shadow_tracing_init();
 
 /* Helper function: standardize message for the trace output. */
 #define shadow_log(domain, fmt, args...) \
-  log_info(domain, "[shadow]: " fmt "\n", ## args);
+  log_info(domain, "[shadow]: " fmt, ## args);
 
+#define TOR_TRACE_HAS_CHANNEL_TLS
+#define tor_trace_channel_tls(name, ...) \
+  tor_trace_channel_tls_##name(__VA_ARGS__)
 /*
  * For instance, to NOP the "circuit" subsystem, simply define this:
  *    #define tor_trace_shadow_circuit(name, ...)
@@ -36,11 +39,6 @@ void shadow_tracing_init();
 #define TOR_TRACE_HAS_CONNECTION
 #define tor_trace_connection(name, ...) \
   tor_trace_connection_##name(__VA_ARGS__)
-
-
-#define TOR_TRACE_HAS_CHANNEL_TLS
-#define tor_trace_channel_tls(name, ...) \
-  tor_trace_channel_tls_##name(__VA_ARGS__)
 
 void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_cell_t *cell, int wide_circ_ids);
 void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn);
