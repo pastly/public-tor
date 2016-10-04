@@ -1,0 +1,3 @@
+  o Minor bugfixes (consensus weight):
+    - Wgd not set correctly as per dir-spec in case 2b3.
+      Fixes bug 20284; patch by pastly.

@@ -934,16 +934,17 @@ networkstatus_compute_bw_weights_v10(smartlist_t *chunks, int64_t G,
         Wmd = (weight_scale*(D - 2*M + G + E))/(3*D);
         Wme = 0;
         Wmg = 0;
+        Wgd = weight_scale - Wed - Wmd;
 
         if (Wmd < 0) { // Can happen if M > T/3
           casename = "Case 2b3 (Wmd=0)";
           Wmd = 0;
+          Wgd = weight_scale - Wed;
           log_warn(LD_DIR,
                    "Too much Middle bandwidth on the network to calculate "
                    "balanced bandwidth-weights. Consider increasing the "
                    "number of Guard nodes by lowering the requirements.");
         }
-        Wgd = weight_scale - Wed - Wmd;
         berr = networkstatus_check_weights(Wgg, Wgd, Wmg, Wme, Wmd, Wee,
                   Wed, weight_scale, G, M, E, D, T, 10, 1);
       }
