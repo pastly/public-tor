@@ -1881,13 +1881,14 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   smartlist_t *chunks = smartlist_new();
   int64_t G, M, E, D, T, weight_scale;
   int ret;
+  int method = MAX_SUPPORTED_CONSENSUS_METHOD;
   weight_scale = 10000;
 
   /* no case. one or more of the values is 0 */
   G = M = E = D = 0;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(chunks), OP_EQ, 0);
 
@@ -1898,7 +1899,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   M = D = 1;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_int_op(smartlist_len(chunks), OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=3333 "
@@ -1914,7 +1915,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   E = D = 5;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=0 Wbe=0 "
     "Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=10000 Wee=10000 Weg=10000 "
@@ -1929,7 +1930,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   G = D = 5;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=0 Wbe=0 "
     "Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=0 Wee=10000 Weg=0 Wem=10000 "
@@ -1945,7 +1946,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   D = 100;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=4000 "
     "Wbe=0 Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=2000 Wee=10000 Weg=2000 "
@@ -1961,7 +1962,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   D = 100;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=666 Wbe=0 "
     "Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=3666 Wee=10000 Weg=3666 "
@@ -1981,7 +1982,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   D = 30;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 0);
   SMARTLIST_FOREACH(chunks, char *, cp, tor_free(cp));
   smartlist_clear(chunks);
@@ -1993,7 +1994,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   D = 5;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=0 "
     "Wbe=3333 Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=0 Wee=6667 Weg=0 "
@@ -2009,7 +2010,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   D = 5;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=0 Wbe=0 "
     "Wbg=3333 Wbm=10000 Wdb=10000 Web=10000 Wed=10000 Wee=10000 Weg=10000 "
@@ -2025,7 +2026,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   D = 10;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=0 "
     "Wbe=3334 Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=0 Wee=6666 Weg=0 "
@@ -2041,7 +2042,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   D = 10;
   T = G + M + E + D;
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_int_op(ret, OP_EQ, 1);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=0 Wbe=0 "
     "Wbg=3334 Wbm=10000 Wdb=10000 Web=10000 Wed=10000 Wee=10000 Weg=10000 "
@@ -2058,7 +2059,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   T = 11305425;
   tt_int_op(G+M+E+D, OP_EQ, T);
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=883 Wbe=0 "
     "Wbg=3673 Wbm=10000 Wdb=10000 Web=10000 Wed=8233 Wee=10000 Weg=8233 "
     "Wem=10000 Wgb=10000 Wgd=883 Wgg=6327 Wgm=6327 Wmb=10000 Wmd=883 Wme=0 "
@@ -2074,7 +2075,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   T=44839415;
   tt_int_op(G+M+E+D, OP_EQ, T);
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=0 Wbe=0 "
     "Wbg=4194 Wbm=10000 Wdb=10000 Web=10000 Wed=10000 Wee=10000 Weg=10000 "
     "Wem=10000 Wgb=10000 Wgd=0 Wgg=5806 Wgm=5806 Wmb=10000 Wmd=0 Wme=0 "
@@ -2090,7 +2091,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   T=9508858;
   tt_int_op(G+M+E+D, OP_EQ, T);
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=317 "
     "Wbe=5938 Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=9366 Wee=4061 "
     "Weg=9366 Wem=4061 Wgb=10000 Wgd=317 Wgg=10000 Wgm=10000 Wmb=10000 "
@@ -2106,7 +2107,7 @@ test_dir_networkstatus_compute_bw_weights_v10(void *arg)
   T=4;
   tt_int_op(G+M+E+D, OP_EQ, T);
   ret = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D, T,
-                                             weight_scale);
+                                             weight_scale, method);
   tt_str_op(smartlist_get(chunks, 0), OP_EQ, "bandwidth-weights Wbd=3333 "
     "Wbe=0 Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=3333 Wee=10000 Weg=3333 "
     "Wem=10000 Wgb=10000 Wgd=3333 Wgg=10000 Wgm=10000 Wmb=10000 Wmd=3333 "

@@ -909,14 +909,16 @@ networkstatus_check_weights(int64_t Wgg, int64_t Wgd, int64_t Wmg,
 }
 
 /**
- * This function computes the bandwidth weights for consensus method 10.
+ * This function computes the bandwidth weights for consensus method 10 and
+ * above.
  *
  * It returns true if weights could be computed, false otherwise.
  */
 int
 networkstatus_compute_bw_weights_v10(smartlist_t *chunks, int64_t G,
                                      int64_t M, int64_t E, int64_t D,
-                                     int64_t T, int64_t weight_scale)
+                                     int64_t T, int64_t weight_scale,
+                                     int consensus_method)
 {
   bw_weights_error_t berr = 0;
   int64_t Wgg = -1, Wgd = -1;
@@ -1015,16 +1017,26 @@ networkstatus_compute_bw_weights_v10(smartlist_t *chunks, int64_t G,
         Wmd = (weight_scale*(D - 2*M + G + E))/(3*D);
         Wme = 0;
         Wmg = 0;
+        if (consensus_method >= MIN_METHOD_FOR_2B3_WGD_CALCULATION) {
+            Wgd = weight_scale - Wed - Wmd;
+        }
+
 
         if (Wmd < 0) { // Can happen if M > T/3
           casename = "Case 2b3 (Wmd=0)";
           Wmd = 0;
+          if (consensus_method >= MIN_METHOD_FOR_2B3_WGD_CALCULATION) {
+              Wgd = weight_scale - Wed;
+          }
           log_warn(LD_DIR,
                    "Too much Middle bandwidth on the network to calculate "
                    "balanced bandwidth-weights. Consider increasing the "
                    "number of Guard nodes by lowering the requirements.");
         }
-        Wgd = weight_scale - Wed - Wmd;
+
+        if (consensus_method < MIN_METHOD_FOR_2B3_WGD_CALCULATION) {
+            Wgd = weight_scale - Wed - Wmd;
+        }
         berr = networkstatus_check_weights(Wgg, Wgd, Wmg, Wme, Wmd, Wee,
                   Wed, weight_scale, G, M, E, D, T, 10, 1);
       }
@@ -2194,7 +2206,8 @@ networkstatus_compute_consensus(smartlist_t *votes,
     }
 
     added_weights = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D,
-                                                         T, weight_scale);
+                                                         T, weight_scale,
+                                                         consensus_method);
   }
 
   /* Add a signature. */

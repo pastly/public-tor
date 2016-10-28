@@ -55,7 +55,7 @@
 #define MIN_SUPPORTED_CONSENSUS_METHOD 13
 
 /** The highest consensus method that we currently support. */
-#define MAX_SUPPORTED_CONSENSUS_METHOD 26
+#define MAX_SUPPORTED_CONSENSUS_METHOD 27
 
 /** Lowest consensus method where microdesc consensuses omit any entry
  * with no microdesc. */
@@ -114,6 +114,10 @@
 /** Lowest consensus method where authorities initialize bandwidth weights to 1
  * instead of 0. See #14881 */
 #define MIN_METHOD_FOR_INIT_BW_WEIGHTS_ONE 26
+
+/** Lowest consensus method where Case 2b3 is updated to match dir-spec.
+ * See #20284 */
+#define MIN_METHOD_FOR_2B3_WGD_CALCULATION 27
 
 /** Default bandwidth to clip unmeasured bandwidths to using method >=
  * MIN_METHOD_TO_CLIP_UNMEASURED_BW.  (This is not a consensus method; do not
@@ -241,7 +245,8 @@ STATIC char *make_consensus_method_list(int low, int high, const char *sep);
 STATIC int
 networkstatus_compute_bw_weights_v10(smartlist_t *chunks, int64_t G,
                                      int64_t M, int64_t E, int64_t D,
-                                     int64_t T, int64_t weight_scale);
+                                     int64_t T, int64_t weight_scale,
+                                     int consensus_method);
 #endif
 
 #endif
