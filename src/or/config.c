@@ -473,6 +473,7 @@ static config_var_t option_vars_[] = {
   V(SchedulerHighWaterMark__,    MEMUNIT,  "101 MB"),
   V(SchedulerMaxFlushCells__,    UINT,     "1000"),
   V(ShadowTraceEveryNCells,      INT,      "1000"),
+  V(ShadowTracingEnabled,        BOOL,     "1"), // Must also be enabled at compile time
   V(ShutdownWaitLength,          INTERVAL, "30 seconds"),
   V(SocksListenAddress,          LINELIST, NULL),
   V(SocksPolicy,                 LINELIST, NULL),
@@ -2142,6 +2143,11 @@ options_act(const or_options_t *old_options)
                options->DirPortFrontPage);
     }
   }
+
+  /* (re)initialize shadow tracing */
+#ifdef USE_SHADOW_TRACING
+  shadow_tracing_init();
+#endif
 
   return 0;
 }

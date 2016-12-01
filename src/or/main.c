@@ -3622,11 +3622,6 @@ tor_main(int argc, char *argv[])
 #endif
   }
 
-  monotime_init();
-#ifdef USE_SHADOW_TRACING
-  shadow_tracing_init();
-#endif
-
   switch (get_options()->command) {
   case CMD_RUN_TOR:
 #ifdef NT_SERVICE

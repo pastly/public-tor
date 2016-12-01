@@ -18,6 +18,11 @@ static uint32_t cell_next_id = 1;
  * cuts down on log spam. */
 static int ShadowTraceEveryNCells;
 static int cell_counter = 0;
+/* Whether or not tracing is enabled. First it must be enabled at compile time,
+ * then the torrc option enabled (or at least not disabled if it's still enabled
+ * by default)
+ */
+static int tracing_enabled;
 
 static int dummy;
 
@@ -61,11 +66,15 @@ trace_add_ts(void)
 
 void shadow_tracing_init()
 {
+  tracing_enabled = get_options()->ShadowTracingEnabled;
   ShadowTraceEveryNCells = get_options()->ShadowTraceEveryNCells;
+  shadow_log(LD_OR, "(re)init shadow tracing. enabled: %d, n: %d",
+      tracing_enabled, ShadowTraceEveryNCells);
 }
 
 void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_cell_t *cell, int wide_circ_ids)
 {
+  if (!tracing_enabled) return;
   if (cell->id < 1) return;
 
   uint8_t key[DIGEST256_LEN] = {0};
@@ -111,6 +120,7 @@ void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_ce
 
 void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
 {
+  if (!tracing_enabled) return;
   if (++cell_counter >= ShadowTraceEveryNCells) {
     int result = clock_gettime(CLOCK_REALTIME, &(cell->ts));
     if (result < 0) cell->ts.tv_sec = cell->ts.tv_nsec = 0;
@@ -125,11 +135,13 @@ void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
 
 void tor_trace_connection_write_to_buf(connection_t *conn, size_t oldbufsize, int newbufsize, size_t cellsize)
 {
+  if (!tracing_enabled) return;
   shadow_log(LD_OR, "old=%" PRIu32 " new=%" PRIi32 " cell=%" PRIu32, oldbufsize, newbufsize, cellsize);
 }
 
 void tor_trace_connection_write_to_buf_flushed(connection_t *conn, int amount)
 {
+  if (!tracing_enabled) return;
   uint8_t key[DIGEST256_LEN] = {0};
 
   if (connections == NULL) {
