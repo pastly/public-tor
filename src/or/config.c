@@ -472,7 +472,7 @@ static config_var_t option_vars_[] = {
   V(SchedulerLowWaterMark__,     MEMUNIT,  "100 MB"),
   V(SchedulerHighWaterMark__,    MEMUNIT,  "101 MB"),
   V(SchedulerMaxFlushCells__,    UINT,     "1000"),
-  V(ShadowTraceEveryNCells,      INT,       "1000"),
+  V(ShadowTraceEveryNCells,      INT,      "1000"),
   V(ShutdownWaitLength,          INTERVAL, "30 seconds"),
   V(SocksListenAddress,          LINELIST, NULL),
   V(SocksPolicy,                 LINELIST, NULL),
