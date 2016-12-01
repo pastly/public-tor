@@ -17,7 +17,7 @@ static uint32_t cell_next_id = 1;
  * assign the cell a non-zero id. We also attach a non-zero timestamp. This
  * cuts down on log spam. */
 static int ShadowTraceEveryNCells;
-static int cell_counter;
+static int cell_counter = 0;
 
 static int dummy;
 
@@ -61,8 +61,7 @@ trace_add_ts(void)
 
 void shadow_tracing_init()
 {
-	ShadowTraceEveryNCells = get_options()->ShadowTraceEveryNCells;
-	cell_counter = 0;
+  ShadowTraceEveryNCells = get_options()->ShadowTraceEveryNCells;
 }
 
 void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_cell_t *cell, int wide_circ_ids)
