@@ -34,36 +34,6 @@ struct cell_info {
   ssize_t outbuf_pos;
 };
 
-/* Thread local storage buffer that contains a formatted timestamp suitable
- * for tracing message output. */
-__thread char time_buf[32];
-
-/* Helper function: return a string formatted timestamp put in a thread
- * local storage buffer that is overwritten at every call. */
-const char *
-trace_add_ts(void)
-{
-  int ret;
-  struct timespec tp;
-
-  ret = clock_gettime(CLOCK_REALTIME, &tp);
-  if (ret < 0) {
-    goto error;
-  }
-
-  ret = tor_snprintf(time_buf, sizeof(time_buf), "%lu.%lu", tp.tv_sec,
-                     tp.tv_nsec);
-  if (ret < 0) {
-    goto error;
-  }
-
-  return time_buf;
-
- error:
-  /* Unable to get the time, return empty string so output does not fail. */
-  return "";
-}
-
 void shadow_tracing_init()
 {
   tracing_enabled = get_options()->ShadowTracingEnabled;

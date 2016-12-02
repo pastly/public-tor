@@ -13,8 +13,6 @@
  * subsystem.
  */
 
-const char *trace_add_ts(void);
-
 void shadow_tracing_init();
 
 /* Helper function: standardize message for the trace output. */
