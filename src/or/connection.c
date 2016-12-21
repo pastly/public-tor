@@ -3017,7 +3017,6 @@ connection_buckets_decrement(connection_t *conn, time_t now,
     tor_fragile_assert();
   }
 
-
   record_num_bytes_transferred_impl(conn, now, num_read, num_written);
 
   if (!connection_is_rate_limited(conn))

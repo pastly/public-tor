@@ -523,6 +523,7 @@ command_process_relay_cell(cell_t *cell, channel_t *chan)
       --or_circ->remaining_relay_early_cells;
     }
   }
+
   if ((reason = circuit_receive_relay_cell(cell, circ, direction)) < 0) {
     log_fn(LOG_PROTOCOL_WARN,LD_PROTOCOL,"circuit_receive_relay_cell "
            "(%s) failed. Closing.",

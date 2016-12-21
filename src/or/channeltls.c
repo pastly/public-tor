@@ -848,7 +848,6 @@ channel_tls_write_packed_cell_method(channel_t *chan,
              chan, U64_PRINTF_ARG(chan->global_identifier));
   }
 
-
   return written;
 }
 
