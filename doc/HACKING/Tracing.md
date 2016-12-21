@@ -42,8 +42,8 @@ have trace events without a tracer.
 
 In `src/trace/events.h`, we map the `tor_trace()` function to the right
 tracer. A tracer support is only enabled at compile time. For instance, the
-file `shadow.{c|h}` contains the trace events mapped to what shadow uses for
-it's data collection.
+file `cell-tracing.{c|h}` contains the trace events mapped to functions used for
+collecting statistics on how long a cell spends in a Tor process.
 
 ## Build System ##
 

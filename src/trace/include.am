@@ -9,13 +9,13 @@ LIBOR_TRACE_A_SOURCES =
 TRACEHEADERS = \
 	src/trace/events.h
 
-if USE_SHADOW_TRACING
+if USE_CELL_TRACING
 
 TRACEHEADERS += \
-  src/trace/shadow.h
+  src/trace/cell-tracing.h
 
 LIBOR_TRACE_A_SOURCES += \
-  src/trace/shadow.c
+  src/trace/cell-tracing.c
 
 else
 

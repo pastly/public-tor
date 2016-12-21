@@ -2360,10 +2360,10 @@ cell_queue_append_packed_copy(circuit_t *circ, cell_queue_t *queue,
                               int wide_circ_ids, int use_stats)
 {
   packed_cell_t *copy = packed_cell_copy(cell, wide_circ_ids);
-#ifdef USE_SHADOW_TRACING
+#ifdef USE_CELL_TRACING
   copy->id = cell->id;
   copy->ts = cell->ts;
-#endif /* USE_SHADOW_TRACING */
+#endif /* USE_CELL_TRACING */
   (void)circ;
   (void)exitward;
   (void)use_stats;

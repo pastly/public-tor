@@ -25,9 +25,9 @@
 #define tor_trace(subsystem, name, ...) \
   tor_trace_##subsystem(name, __VA_ARGS__)
 
-/* Enable shadow tracing events. */
-#ifdef USE_SHADOW_TRACING
-#include "shadow.h"
+/* Enable tracing events. */
+#ifdef USE_CELL_TRACING
+#include "cell-tracing.h"
 #elif USE_LOG_DEBUG_TRACING
 #include "log-debug.h"
 #endif

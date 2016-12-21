@@ -111,7 +111,7 @@
 
 #include <event2/event.h>
 
-#ifdef USE_SHADOW_TRACING
+#ifdef USE_CELL_TRACING
 #include "trace/events.h"
 #endif
 

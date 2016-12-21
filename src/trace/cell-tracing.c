@@ -1,7 +1,7 @@
 /* Copyright (c) 2015, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
-#include "shadow.h"
+#include "cell-tracing.h"
 
 #include "buffers.h"
 #include "or.h"
@@ -10,17 +10,16 @@
 /* In tracing mode, a cell data structure has an ID field.
  * This is a global counter indicating the next ID a cell should get. It is
  * incremented every time the inbuf trace event is hit and
- * cell_counter == ShadowTraceEveryNCells. */
+ * cell_counter == CellTracingEveryNCells. */
 static uint32_t cell_next_id = 1;
 /* This value reduces the number of cells that get traced. We count cells until
- * the counter reaches ShadowTraceEveryNCells, at which point we increment and
+ * the counter reaches CellTracingEveryNCells, at which point we increment and
  * assign the cell a non-zero id. We also attach a non-zero timestamp. This
  * cuts down on log spam. */
-static int ShadowTraceEveryNCells;
+static int CellTracingEveryNCells;
 static int cell_counter = 0;
 /* Whether or not tracing is enabled. First it must be enabled at compile time,
- * then the torrc option enabled (or at least not disabled if it's still enabled
- * by default)
+ * then the torrc option enabled.
  */
 static int tracing_enabled;
 
@@ -34,12 +33,12 @@ struct cell_info {
   ssize_t outbuf_pos;
 };
 
-void shadow_tracing_init()
+void cell_tracing_init()
 {
-  tracing_enabled = get_options()->ShadowTracingEnabled;
-  ShadowTraceEveryNCells = get_options()->ShadowTraceEveryNCells;
-  shadow_log(LD_OR, "(re)init shadow tracing. enabled: %d, n: %d",
-      tracing_enabled, ShadowTraceEveryNCells);
+  tracing_enabled = get_options()->CellTracingEnabled;
+  CellTracingEveryNCells = get_options()->CellTracingEveryNCells;
+  shadow_log(LD_OR, "(re)init cell tracing. enabled: %d, n: %d",
+      tracing_enabled, CellTracingEveryNCells);
 }
 
 void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_cell_t *cell, int wide_circ_ids)
@@ -91,11 +90,11 @@ void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_ce
 void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
 {
   if (!tracing_enabled) return;
-  if (++cell_counter >= ShadowTraceEveryNCells) {
+  if (++cell_counter >= CellTracingEveryNCells) {
     int result = clock_gettime(CLOCK_REALTIME, &(cell->ts));
     if (result < 0) cell->ts.tv_sec = cell->ts.tv_nsec = 0;
     cell->id = cell_next_id++;
-    cell_counter -= ShadowTraceEveryNCells;
+    cell_counter -= CellTracingEveryNCells;
     shadow_log(LD_OR, "%lu.%lu id=%" PRIu32, cell->ts.tv_sec, cell->ts.tv_nsec, cell->id);
   } else {
     cell->id = 0;

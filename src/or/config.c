@@ -472,8 +472,8 @@ static config_var_t option_vars_[] = {
   V(SchedulerLowWaterMark__,     MEMUNIT,  "100 MB"),
   V(SchedulerHighWaterMark__,    MEMUNIT,  "101 MB"),
   V(SchedulerMaxFlushCells__,    UINT,     "1000"),
-  V(ShadowTraceEveryNCells,      INT,      "1000"),
-  V(ShadowTracingEnabled,        BOOL,     "1"), // Must also be enabled at compile time
+  V(CellTracingEveryNCells,      INT,      "1000"),
+  V(CellTracingEnabled,          BOOL,     "1"),
   V(ShutdownWaitLength,          INTERVAL, "30 seconds"),
   V(SocksListenAddress,          LINELIST, NULL),
   V(SocksPolicy,                 LINELIST, NULL),
@@ -2144,9 +2144,9 @@ options_act(const or_options_t *old_options)
     }
   }
 
-  /* (re)initialize shadow tracing */
-#ifdef USE_SHADOW_TRACING
-  shadow_tracing_init();
+  /* (re)initialize cell tracing */
+#ifdef USE_CELL_TRACING
+  cell_tracing_init();
 #endif
 
   return 0;
