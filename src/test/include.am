@@ -184,7 +184,7 @@ src_test_test_LDADD = src/or/libtor-testing.a \
 	src/common/libor-ctime-testing.a \
 	src/common/libor-event-testing.a \
 	src/trunnel/libor-trunnel-testing.a \
-  src/trace/libor-trace.a \
+	src/trace/libor-trace.a \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
 	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@ \
 	@TOR_SYSTEMD_LIBS@
@@ -255,7 +255,7 @@ src_test_test_ntor_cl_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@
 src_test_test_ntor_cl_LDADD = src/or/libtor.a src/common/libor.a \
 	src/common/libor-ctime.a \
 	src/common/libor-crypto.a $(LIBKECCAK_TINY) $(LIBDONNA) \
-  src/trace/libor-trace.a \
+	src/trace/libor-trace.a \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ \
 	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
 src_test_test_ntor_cl_AM_CPPFLAGS =	       \
