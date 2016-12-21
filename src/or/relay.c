@@ -2359,7 +2359,6 @@ cell_queue_append_packed_copy(circuit_t *circ, cell_queue_t *queue,
                               int exitward, const cell_t *cell,
                               int wide_circ_ids, int use_stats)
 {
-  struct timeval now;
   packed_cell_t *copy = packed_cell_copy(cell, wide_circ_ids);
 #ifdef USE_SHADOW_TRACING
   copy->id = cell->id;
