@@ -2106,7 +2106,7 @@ connection_or_process_cells_from_inbuf(or_connection_t *conn)
        * network-order string) */
       cell_unpack(&cell, buf, wide_circ_ids);
       /* Trigger trace event once we have a valid cell from inbuf. */
-      tor_trace(connection, cell_inbuf, &cell, TO_CONN(conn));
+      tor_trace(connection, cell_inbuf, &cell);
 
       channel_tls_handle_cell(&cell, conn);
     }

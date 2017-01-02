@@ -87,7 +87,7 @@ void tor_trace_channel_tls_write_packed_cell(connection_t *conn,
       c_info->ts.tv_nsec, ts.tv_sec, ts.tv_nsec, diff, c_info->id);
 }
 
-void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
+void tor_trace_connection_cell_inbuf(cell_t *cell)
 {
   if (!tracing_enabled) return;
   if (++cell_counter >= trace_every_n) {
