@@ -36,7 +36,6 @@ void cell_tracing_init();
 
 void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_cell_t *cell, int wide_circ_ids);
 void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn);
-void tor_trace_connection_write_to_buf(connection_t *conn, size_t oldbufsize, int newbufsize, size_t cellsize);
 void tor_trace_connection_write_to_buf_flushed(connection_t *conn, int amount);
 
 #endif /* TOR_TRACE_EVENTS_CELL_TRACING_H */

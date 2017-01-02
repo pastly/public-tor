@@ -102,12 +102,6 @@ void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
   }
 }
 
-void tor_trace_connection_write_to_buf(connection_t *conn, size_t oldbufsize, int newbufsize, size_t cellsize)
-{
-  if (!tracing_enabled) return;
-  log_info(LD_OR, "[cell-tracing] old=%" PRIu32 " new=%" PRIi32 " cell=%" PRIu32, oldbufsize, newbufsize, cellsize);
-}
-
 void tor_trace_connection_write_to_buf_flushed(connection_t *conn, int amount)
 {
   if (!tracing_enabled) return;
