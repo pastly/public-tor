@@ -33,7 +33,7 @@ struct cell_info {
   ssize_t outbuf_pos;
 };
 
-void cell_tracing_init()
+void cell_tracing_init(void)
 {
   tracing_enabled = get_options()->CellTracingEnabled;
   trace_every_n = get_options()->CellTracingEveryNCells;

@@ -13,7 +13,7 @@
  * subsystem.
  */
 
-void cell_tracing_init();
+void cell_tracing_init(void);
 
 #define TOR_TRACE_HAS_CHANNEL_TLS
 #define tor_trace_channel_tls(name, ...) \
