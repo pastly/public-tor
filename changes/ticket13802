@@ -1,0 +1,2 @@
+  o Minor features (testing):
+    - Add general trace-event logging instrumentation to Tor. Implements 13802.
