@@ -103,6 +103,9 @@
 #ifdef _WIN32
 #include <shlobj.h>
 #endif
+#ifdef USE_CELL_TRACING
+#include "trace/events.h"
+#endif
 
 #include "procmon.h"
 
