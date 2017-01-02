@@ -9,21 +9,10 @@ LIBOR_TRACE_A_SOURCES =
 TRACEHEADERS = \
 	src/trace/events.h
 
-if USE_CELL_TRACING
-
-TRACEHEADERS += \
-  src/trace/cell-tracing.h
-
-LIBOR_TRACE_A_SOURCES += \
-  src/trace/cell-tracing.c
-
-else
-
 if USE_LOG_DEBUG_TRACING
 
 TRACEHEADERS += \
   src/trace/log-debug.h
-endif
 endif
 
 # Library source files.

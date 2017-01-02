@@ -170,20 +170,12 @@ AC_ARG_ENABLE(seccomp,
 AC_ARG_ENABLE(libscrypt,
      AS_HELP_STRING(--disable-libscrypt, [do not attempt to use libscrypt]))
 
-dnl Enable tracing with cell tracing support.
-AC_ARG_ENABLE(cell-tracing,
-     AS_HELP_STRING(--enable-cell-tracing, build with cell tracing support),
-     AC_DEFINE([USE_CELL_TRACING], [1], [Compile with cell tracing]))
-
-AM_CONDITIONAL([USE_CELL_TRACING], [test "$enable_cell_tracing" = "yes"])
-
 dnl Enable tracing event which are transformed to debug log statement.
 AC_ARG_ENABLE(log-debug-tracing,
      AS_HELP_STRING(--enable-log-debug-tracing, build with tracing to debug log))
 AM_CONDITIONAL([USE_LOG_DEBUG_TRACING], [test "$enable_log_debug_tracing" = "yes"])
 
-if test x$enable_cell_tracing = xyes ||
-   test x$enable_log_debug_tracing = xyes; then
+if test x$enable_log_debug_tracing = xyes; then
   AC_DEFINE([TOR_TRACING_ENABLED], [1], [Compile the tracing instrumentation])
 fi
 

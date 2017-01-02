@@ -103,9 +103,6 @@
 #ifdef _WIN32
 #include <shlobj.h>
 #endif
-#ifdef USE_CELL_TRACING
-#include "trace/events.h"
-#endif
 
 #include "procmon.h"
 
@@ -475,8 +472,6 @@ static config_var_t option_vars_[] = {
   V(SchedulerLowWaterMark__,     MEMUNIT,  "100 MB"),
   V(SchedulerHighWaterMark__,    MEMUNIT,  "101 MB"),
   V(SchedulerMaxFlushCells__,    UINT,     "1000"),
-  V(CellTracingEveryNCells,      INT,      "1000"),
-  V(CellTracingEnabled,          BOOL,     "1"),
   V(ShutdownWaitLength,          INTERVAL, "30 seconds"),
   V(SocksListenAddress,          LINELIST, NULL),
   V(SocksPolicy,                 LINELIST, NULL),
@@ -2146,11 +2141,6 @@ options_act(const or_options_t *old_options)
                options->DirPortFrontPage);
     }
   }
-
-  /* (re)initialize cell tracing */
-#ifdef USE_CELL_TRACING
-  cell_tracing_init();
-#endif
 
   return 0;
 }

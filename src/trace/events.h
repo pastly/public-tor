@@ -26,9 +26,6 @@
   tor_trace_##subsystem(name, __VA_ARGS__)
 
 /* Enable tracing events. */
-#ifdef USE_CELL_TRACING
-#include "cell-tracing.h"
-#endif
 #ifdef USE_LOG_DEBUG_TRACING
 #include "log-debug.h"
 #endif

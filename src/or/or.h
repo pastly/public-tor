@@ -1107,10 +1107,6 @@ typedef struct cell_t {
   uint8_t command; /**< Type of the cell: one of CELL_PADDING, CELL_CREATE,
                     * CELL_DESTROY, etc */
   uint8_t payload[CELL_PAYLOAD_SIZE]; /**< Cell body. */
-#ifdef USE_CELL_TRACING
-  uint32_t id;
-  struct timespec ts;
-#endif /* USE_CELL_TRACING */
 } cell_t;
 
 /** Parsed variable-length onion routing cell. */
@@ -1139,10 +1135,6 @@ typedef struct packed_cell_t {
   char body[CELL_MAX_NETWORK_SIZE]; /**< Cell as packed for network. */
   uint32_t inserted_time; /**< Time (in milliseconds since epoch, with high
                            * bits truncated) when this cell was inserted. */
-#ifdef USE_CELL_TRACING
-  uint32_t id;
-  struct timespec ts;
-#endif /* USE_CELL_TRACING */
 } packed_cell_t;
 
 /** A queue of cells on a circuit, waiting to be added to the
@@ -4602,16 +4594,6 @@ typedef struct {
    * we should remove it entirely.
    */
   int UseDeprecatedGuardAlgorithm;
-
-  /** If cell tracing is enabled, how often should tracing be performed, in
-   * number of cells. Useful for reducing log spam
-   */
-  int CellTracingEveryNCells;
-
-  /** If cell tracing was enabled at compile time, this option must also be set
-   * in order for cell tracing to actually be performed.
-   */
-  int CellTracingEnabled;
 } or_options_t;
 
 /** Persistent state for an onion router, as saved to disk. */

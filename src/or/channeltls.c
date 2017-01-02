@@ -57,7 +57,6 @@
 #include "routerlist.h"
 #include "scheduler.h"
 #include "torcert.h"
-#include "trace/events.h"
 
 /** How many CELL_PADDING cells have we received, ever? */
 uint64_t stats_n_padding_cells_processed = 0;
@@ -834,7 +833,6 @@ channel_tls_write_packed_cell_method(channel_t *chan,
   tor_assert(packed_cell);
 
   if (tlschan->conn) {
-    tor_trace(channel_tls, write_packed_cell, TO_CONN(tlschan->conn), packed_cell, chan->wide_circ_ids);
     connection_write_to_buf(packed_cell->body, cell_network_size,
                             TO_CONN(tlschan->conn));
 

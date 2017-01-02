@@ -55,7 +55,6 @@
 #include "ext_orport.h"
 #include "scheduler.h"
 #include "torcert.h"
-#include "trace/events.h"
 
 static int connection_tls_finish_handshake(or_connection_t *conn);
 static int connection_or_launch_v3_or_handshake(or_connection_t *conn);
@@ -1922,10 +1921,6 @@ or_handshake_state_record_cell(or_connection_t *conn,
   /* Re-packing like this is a little inefficient, but we don't have to do
      this very often at all. */
   cell_pack(&packed, cell, conn->wide_circ_ids);
-#ifdef USE_CELL_TRACING
-  packed.id = cell->id;
-  packed.ts = cell->ts;
-#endif /* USE_CELL_TRACING */
   crypto_digest_add_bytes(d, packed.body, cell_network_size);
   memwipe(&packed, 0, sizeof(packed));
 }
@@ -1997,10 +1992,7 @@ connection_or_write_cell_to_buf(const cell_t *cell, or_connection_t *conn)
   tor_assert(conn);
 
   cell_pack(&networkcell, cell, conn->wide_circ_ids);
-#ifdef USE_CELL_TRACING
-  networkcell.id = cell->id;
-  networkcell.ts = cell->ts;
-#endif /* USE_CELL_TRACING */
+
   connection_write_to_buf(networkcell.body, cell_network_size, TO_CONN(conn));
 
   /* Touch the channel's active timestamp if there is one */
@@ -2105,8 +2097,6 @@ connection_or_process_cells_from_inbuf(or_connection_t *conn)
       /* retrieve cell info from buf (create the host-order struct from the
        * network-order string) */
       cell_unpack(&cell, buf, wide_circ_ids);
-      /* Trigger trace event once we have a valid cell from inbuf. */
-      tor_trace(connection, cell_inbuf, &cell);
 
       channel_tls_handle_cell(&cell, conn);
     }

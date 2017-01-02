@@ -1507,11 +1507,6 @@ onionskin_answer(or_circuit_t *circ,
 
   circ->is_first_hop = (created_cell->cell_type == CELL_CREATED_FAST);
 
-#ifdef USE_CELL_TRACING
-  cell.id = 0;
-  cell.ts.tv_sec = cell.ts.tv_nsec = 0;
-#endif /* USE_CELL_TRACING */
-
   append_cell_to_circuit_queue(TO_CIRCUIT(circ),
                                circ->p_chan, &cell, CELL_DIRECTION_IN, 0);
   log_debug(LD_CIRC,"Finished sending '%s' cell.",
