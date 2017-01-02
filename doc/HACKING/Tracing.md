@@ -76,13 +76,13 @@ that tells what the event is for. For example:
 
 	tor_trace(hs, store_desc_as_client, desc, desc_id);
 
-If you look in `src/trace/events.h`, you'll see that if shadow tracing
+If you look in `src/trace/events.h`, you'll see that if cell tracing
 is enabled, it will be mapped to a function called:
 
-	tor_trace_shadow_hs_store_desc_as_client(desc, desc_id)
+	tor_trace_hs_store_desc_as_client(desc, desc_id)
 
 And the point of all this is for that function to be defined in
-`src/trace/shadow.{c|h}` and mapped to whatever shadow wants to use for
-recording data (e.g: fprintf()).
+`src/trace/cell-tracing.{c|h}` and mapped to whatever the researcher wants to
+use for recording data (e.g: fprintf()).
 
 
