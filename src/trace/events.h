@@ -28,7 +28,8 @@
 /* Enable tracing events. */
 #ifdef USE_CELL_TRACING
 #include "cell-tracing.h"
-#elif USE_LOG_DEBUG_TRACING
+#endif
+#ifdef USE_LOG_DEBUG_TRACING
 #include "log-debug.h"
 #endif
 
