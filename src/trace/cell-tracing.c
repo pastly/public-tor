@@ -23,8 +23,6 @@ static int cell_counter = 0;
  */
 static int tracing_enabled;
 
-static int dummy;
-
 static digest256map_t *connections;
 
 struct cell_info {
@@ -81,9 +79,6 @@ void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_ce
   if (result < 0) ts.tv_sec = ts.tv_nsec = 0;
   int64_t diff = ( ((uint64_t)ts.tv_sec) *1000000000 + ts.tv_nsec ) -
           ( ((uint64_t)c_info->ts.tv_sec)*1000000000 + c_info->ts.tv_nsec );
-  if (diff < 0) {
-    dummy++;
-  }
   log_info(LD_OR, "[cell-tracing] %" PRIu32 ".%" PRIu32 " %" PRIu32 ".%" PRIu32 " %" PRIi64 " id=%" PRIu32 " waiting in outbuf", c_info->ts.tv_sec, c_info->ts.tv_nsec, ts.tv_sec, ts.tv_nsec, diff, c_info->id);
 }
 
@@ -127,9 +122,6 @@ void tor_trace_connection_write_to_buf_flushed(connection_t *conn, int amount)
         ts.tv_sec = ts.tv_nsec = 0;
       int64_t diff = ( ((uint64_t)ts.tv_sec)         *1000000000 + ts.tv_nsec ) -
                       ( ((uint64_t)c_info->ts.tv_sec)*1000000000 + c_info->ts.tv_nsec );
-      if (diff < 0) {
-        dummy++;
-      }
       log_info(LD_OR, "[cell-tracing] %" PRIu32 ".%" PRIu32 " %" PRIu32 ".%" PRIu32 " %" PRIi64 " id=%" PRIu32 " written to kernel", c_info->ts.tv_sec, c_info->ts.tv_nsec, ts.tv_sec, ts.tv_nsec, diff, c_info->id);
       tor_free(c_info);
       MAP_DEL_CURRENT(k);
