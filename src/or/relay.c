@@ -2336,9 +2336,9 @@ packed_cell_copy(const cell_t *cell, int wide_circ_ids)
 {
   packed_cell_t *c = packed_cell_new();
   cell_pack(c, cell, wide_circ_ids);
-#ifdef TOR_TRACING_ENABLED
+#ifdef USE_CELL_TRACING
   c->id = cell->id;
-#endif /* TOR_TRACING_ENABLED */
+#endif /* USE_CELL_TRACING */
   return c;
 }
 
