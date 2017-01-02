@@ -15,10 +15,6 @@
 
 void cell_tracing_init();
 
-/* Helper function: standardize message for the trace output. */
-#define shadow_log(domain, fmt, args...) \
-  log_info(domain, "[shadow]: " fmt, ## args);
-
 #define TOR_TRACE_HAS_CHANNEL_TLS
 #define tor_trace_channel_tls(name, ...) \
   tor_trace_channel_tls_##name(__VA_ARGS__)

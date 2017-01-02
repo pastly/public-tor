@@ -37,7 +37,7 @@ void cell_tracing_init()
 {
   tracing_enabled = get_options()->CellTracingEnabled;
   CellTracingEveryNCells = get_options()->CellTracingEveryNCells;
-  shadow_log(LD_OR, "(re)init cell tracing. enabled: %d, n: %d",
+  log_info(LD_OR, "[cell-tracing] (re)init cell tracing. enabled: %d, n: %d",
       tracing_enabled, CellTracingEveryNCells);
 }
 
@@ -67,7 +67,7 @@ void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_ce
   c_info = digest256map_get(infos, key);
   if (c_info != NULL) {
     /* XXX: Already in our state... why are we being called? */
-    shadow_log(LD_OR, "id=%" PRIu32 " already in our state",
+    log_info(LD_OR, "[cell-tracing] id=%" PRIu32 " already in our state",
         c_info->id);
     return;
   }
@@ -84,7 +84,7 @@ void tor_trace_channel_tls_write_packed_cell(connection_t *conn, const packed_ce
   if (diff < 0) {
     dummy++;
   }
-  shadow_log(LD_OR, "%" PRIu32 ".%" PRIu32 " %" PRIu32 ".%" PRIu32 " %" PRIi64 " id=%" PRIu32 " waiting in outbuf", c_info->ts.tv_sec, c_info->ts.tv_nsec, ts.tv_sec, ts.tv_nsec, diff, c_info->id);
+  log_info(LD_OR, "[cell-tracing] %" PRIu32 ".%" PRIu32 " %" PRIu32 ".%" PRIu32 " %" PRIi64 " id=%" PRIu32 " waiting in outbuf", c_info->ts.tv_sec, c_info->ts.tv_nsec, ts.tv_sec, ts.tv_nsec, diff, c_info->id);
 }
 
 void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
@@ -95,7 +95,7 @@ void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
     if (result < 0) cell->ts.tv_sec = cell->ts.tv_nsec = 0;
     cell->id = cell_next_id++;
     cell_counter -= CellTracingEveryNCells;
-    shadow_log(LD_OR, "%lu.%lu id=%" PRIu32, cell->ts.tv_sec, cell->ts.tv_nsec, cell->id);
+    log_info(LD_OR, "[cell-tracing] %lu.%lu id=%" PRIu32, cell->ts.tv_sec, cell->ts.tv_nsec, cell->id);
   } else {
     cell->id = 0;
     cell->ts.tv_sec = cell->ts.tv_nsec = 0;
@@ -105,7 +105,7 @@ void tor_trace_connection_cell_inbuf(cell_t *cell, connection_t *conn)
 void tor_trace_connection_write_to_buf(connection_t *conn, size_t oldbufsize, int newbufsize, size_t cellsize)
 {
   if (!tracing_enabled) return;
-  shadow_log(LD_OR, "old=%" PRIu32 " new=%" PRIi32 " cell=%" PRIu32, oldbufsize, newbufsize, cellsize);
+  log_info(LD_OR, "[cell-tracing] old=%" PRIu32 " new=%" PRIi32 " cell=%" PRIu32, oldbufsize, newbufsize, cellsize);
 }
 
 void tor_trace_connection_write_to_buf_flushed(connection_t *conn, int amount)
@@ -136,7 +136,7 @@ void tor_trace_connection_write_to_buf_flushed(connection_t *conn, int amount)
       if (diff < 0) {
         dummy++;
       }
-      shadow_log(LD_OR, "%" PRIu32 ".%" PRIu32 " %" PRIu32 ".%" PRIu32 " %" PRIi64 " id=%" PRIu32 " written to kernel", c_info->ts.tv_sec, c_info->ts.tv_nsec, ts.tv_sec, ts.tv_nsec, diff, c_info->id);
+      log_info(LD_OR, "[cell-tracing] %" PRIu32 ".%" PRIu32 " %" PRIu32 ".%" PRIu32 " %" PRIi64 " id=%" PRIu32 " written to kernel", c_info->ts.tv_sec, c_info->ts.tv_nsec, ts.tv_sec, ts.tv_nsec, diff, c_info->id);
       tor_free(c_info);
       MAP_DEL_CURRENT(k);
     }
