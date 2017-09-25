@@ -215,6 +215,7 @@ static int can_complete_circuits = 0;
 int quiet_level = 0;
 
 KQTime* global_kqtime = NULL;
+static struct event *log_kqtime_ev = NULL;
 
 /********* END VARIABLES ************/
 
@@ -2604,6 +2605,15 @@ do_main_loop(void)
   return run_main_loop_until_done();
 }
 
+static void
+tell_kqtime_to_log(evutil_socket_t fd, short events, void *arg)
+{
+  (void) fd;
+  (void) events;
+  (void) arg;
+  kqtime_log_stats(get_kqtime());
+}
+
 /**
  * Run the main loop a single time. Return 0 for "exit"; -1 for "exit with
  * error", and 1 for "run this again."
@@ -2616,8 +2626,13 @@ run_main_loop_once(void)
   if (nt_service_is_stopping())
     return 0;
 
-  if(get_options()->KQTimeLogFile) {
-    global_kqtime = kqtime_new(get_options()->KQTimeLogFile, 1, 1, 1);
+  if(get_options()->KQTimeLogFile && !global_kqtime) {
+    global_kqtime = kqtime_new(get_options()->KQTimeLogFile,
+        get_options()->KQTimeDevice, NULL);
+    log_kqtime_ev = tor_event_new(tor_libevent_get_base(), -1, EV_PERSIST,
+        tell_kqtime_to_log, NULL);
+    struct timeval run_interval = {3, 0};
+    event_add(log_kqtime_ev, &run_interval);
   }
 
 #ifndef _WIN32

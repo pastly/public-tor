@@ -576,7 +576,10 @@ connection_free_(connection_t *conn)
 
   if (connection_speaks_cells(conn)) {
     if(get_kqtime()) {
-      kqtime_deregister(get_kqtime(), conn->s);
+      char *ipaddr_str = tor_addr_to_str_dup(&conn->addr);
+      int16_t orport = conn->port;
+      kqtime_deregister(get_kqtime(), conn->s, ipaddr_str, orport);
+      tor_free(ipaddr_str);
     }
     or_connection_t *or_conn = TO_OR_CONN(conn);
     tor_tls_free(or_conn->tls);
@@ -4587,8 +4590,15 @@ connection_finished_flushing(connection_t *conn)
 
 static void
 connection_register_kqtime_fd(connection_t *conn) {
-  char fd_name[256];
-  memset(fd_name, 0, 256);
+  char extra_info[256];
+  memset(extra_info, 0, 256);
+  char *ipaddr_str = NULL;
+  int16_t orport;
+
+  /* Only support IPv4 for now */
+  if (conn->socket_family != AF_INET) {
+    return;
+  }
 
   /* only log real address if its a known router */
   const routerinfo_t* ri = router_get_by_id_digest(TO_OR_CONN(conn)->identity_digest);
@@ -4598,17 +4608,19 @@ connection_register_kqtime_fd(connection_t *conn) {
     memset(fingerprint, 0, FINGERPRINT_LEN+1);
     crypto_pk_get_fingerprint(ri->identity_pkey, fingerprint, 0);
 
-    tor_snprintf(fd_name, 256, "name=%s,address=%s,or_port=%d,fp=%s,"
+    ipaddr_str = tor_addr_to_str_dup(&conn->addr);
+    /* May not actually be the ORPort, but we really just want the port we are
+     * connected to. */
+    orport = conn->port;
+    tor_snprintf(extra_info, 256, "name=%s,fp=%s,"
         "read_tokens=%d,write_tokens=%d,bw_rate=%d,bw_burst=%d,bw_cap=%d",
-        ri->nickname, fmt_addr32(ri->addr), (int)ri->or_port,
+        ri->nickname,
         fingerprint, TO_OR_CONN(conn)->read_bucket, TO_OR_CONN(conn)->write_bucket,
         (int)ri->bandwidthrate, (int)ri->bandwidthburst, (int)ri->bandwidthcapacity);
-  } else {
-    /* be safe and dont log the unknown peer */
-    tor_snprintf(fd_name, 256, "unknown");
+    kqtime_register(get_kqtime(), conn->s, ipaddr_str, orport, extra_info);
   }
-
-  kqtime_register(get_kqtime(), conn->s, fd_name);
+  if (ipaddr_str)
+    tor_free(ipaddr_str);
 }
 
 /** Called when our attempt to connect() to another server has just

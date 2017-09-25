@@ -4631,6 +4631,7 @@ typedef struct {
 
   /** if we want libkqtime to actually collect and log statistics for us */
   char* KQTimeLogFile;
+  char* KQTimeDevice;
 
 } or_options_t;
 
