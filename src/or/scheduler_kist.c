@@ -412,6 +412,19 @@ update_socket_written(socket_table_t *table, channel_t *chan, size_t bytes)
   ent->written += bytes;
 }
 
+/** Helper to add a channel to a list and creates the list if needed.
+ * The scheduler doesn't want to have to make a to_readd list if it doesn't
+ * have to, and we now do this in more than once place in kist_scheduler_run.
+ */
+static void
+add_chan_to_readd_list(smartlist_t *to_readd, channel_t *chan)
+{
+    if (!to_readd) {
+      to_readd = smartlist_new();
+    }
+    smartlist_add(to_readd, chan);
+}
+
 /*
  * A naive KIST impl would write every single cell all the way to the kernel.
  * That would take a lot of system calls. A less bad KIST impl would write a
@@ -591,8 +604,16 @@ kist_scheduler_run(void)
       if (flush_result > 0) {
         update_socket_written(&socket_table, chan, flush_result *
                               (CELL_MAX_NETWORK_SIZE + TLS_PER_CELL_OVERHEAD));
+      } else {
+        log_info(LD_SCHED, "We didn't flush anything on a chan that we think "
+                 "can write and wants to write. The channel's state is '%s'. "
+                 "We're going to mark it as waiting_to_write (as that's most "
+                 "likely the issue) and stop scheduling it this round.",
+                 channel_state_to_string(chan->state));
+        chan->scheduler_state = SCHED_CHAN_WAITING_TO_WRITE;
+        add_chan_to_readd_list(to_readd, chan);
+        continue;
       }
-      /* XXX What if we didn't flush? */
     }
 
     /* Decide what to do with the channel now */
@@ -639,10 +660,7 @@ kist_scheduler_run(void)
        * in the next scheduling round.
        */
       chan->scheduler_state = SCHED_CHAN_WAITING_TO_WRITE;
-      if (!to_readd) {
-        to_readd = smartlist_new();
-      }
-      smartlist_add(to_readd, chan);
+      add_chan_to_readd_list(to_readd, chan);
       log_debug(LD_SCHED, "chan=%" PRIu64 " now waiting_to_write",
                 chan->global_identifier);
     } else {
