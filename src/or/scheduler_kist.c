@@ -604,8 +604,16 @@ kist_scheduler_run(void)
       if (flush_result > 0) {
         update_socket_written(&socket_table, chan, flush_result *
                               (CELL_MAX_NETWORK_SIZE + TLS_PER_CELL_OVERHEAD));
+      } else {
+        log_info(LD_SCHED, "We didn't flush anything on a chan that we think "
+                 "can write and wants to write. The channel's state is '%s'. "
+                 "We're going to mark it as waiting_to_write (as that's most "
+                 "likely the issue) and stop scheduling it this round.",
+                 channel_state_to_string(chan->state));
+        chan->scheduler_state = SCHED_CHAN_WAITING_TO_WRITE;
+        add_chan_to_readd_list(to_readd, chan);
+        continue;
       }
-      /* XXX What if we didn't flush? */
     }
 
     /* Decide what to do with the channel now */
