@@ -1957,6 +1957,7 @@ connection_or_set_state_open(or_connection_t *conn)
   or_handshake_state_free(conn->handshake_state);
   conn->handshake_state = NULL;
   connection_start_reading(TO_CONN(conn));
+  connection_register_kqtime_fd(TO_CONN(conn));
 
   return 0;
 }

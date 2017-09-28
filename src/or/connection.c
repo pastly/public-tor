@@ -167,6 +167,47 @@ static smartlist_t *outgoing_addrs = NULL;
 
 /**************************************************************/
 
+void
+connection_register_kqtime_fd(connection_t *conn) {
+  char extra_info[256];
+  memset(extra_info, 0, 256);
+  char *ipaddr_str = NULL;
+  int16_t orport;
+
+  /* Only support IPv4 for now */
+  if (conn->socket_family != AF_INET) {
+    log_warn(LD_GENERAL,
+        "Not registering with kqtime because no socket_family");
+    return;
+  }
+
+  /* only log real address if its a known router */
+  const routerinfo_t* ri = router_get_by_id_digest(TO_OR_CONN(conn)->identity_digest);
+  if(ri) {
+    /* this is a known public router, its ok to log its info */
+    char fingerprint[FINGERPRINT_LEN+1];
+    memset(fingerprint, 0, FINGERPRINT_LEN+1);
+    crypto_pk_get_fingerprint(ri->identity_pkey, fingerprint, 0);
+
+    ipaddr_str = tor_addr_to_str_dup(&conn->addr);
+    /* May not actually be the ORPort, but we really just want the port we are
+     * connected to. */
+    orport = conn->port;
+    tor_snprintf(extra_info, 256, "name=%s,fp=%s,"
+        "read_tokens=%d,write_tokens=%d,bw_rate=%d,bw_burst=%d,bw_cap=%d",
+        ri->nickname,
+        fingerprint, TO_OR_CONN(conn)->read_bucket, TO_OR_CONN(conn)->write_bucket,
+        (int)ri->bandwidthrate, (int)ri->bandwidthburst, (int)ri->bandwidthcapacity);
+    kqtime_register(get_kqtime(), conn->s, ipaddr_str, orport, extra_info);
+  } else {
+    log_warn(LD_GENERAL,
+        "Not registering with kqtime because no router info");
+  }
+  if (ipaddr_str)
+    tor_free(ipaddr_str);
+}
+
+
 /**
  * Return the human-readable name for the connection type <b>type</b>
  */
@@ -315,6 +356,9 @@ or_connection_new(int type, int socket_family)
   if (type == CONN_TYPE_EXT_OR)
     connection_or_set_ext_or_identifier(or_conn);
 
+
+  // no router info at this point :(
+  //connection_register_kqtime_fd(TO_CONN(or_conn));
   return or_conn;
 }
 
@@ -4588,41 +4632,6 @@ connection_finished_flushing(connection_t *conn)
   }
 }
 
-static void
-connection_register_kqtime_fd(connection_t *conn) {
-  char extra_info[256];
-  memset(extra_info, 0, 256);
-  char *ipaddr_str = NULL;
-  int16_t orport;
-
-  /* Only support IPv4 for now */
-  if (conn->socket_family != AF_INET) {
-    return;
-  }
-
-  /* only log real address if its a known router */
-  const routerinfo_t* ri = router_get_by_id_digest(TO_OR_CONN(conn)->identity_digest);
-  if(ri) {
-    /* this is a known public router, its ok to log its info */
-    char fingerprint[FINGERPRINT_LEN+1];
-    memset(fingerprint, 0, FINGERPRINT_LEN+1);
-    crypto_pk_get_fingerprint(ri->identity_pkey, fingerprint, 0);
-
-    ipaddr_str = tor_addr_to_str_dup(&conn->addr);
-    /* May not actually be the ORPort, but we really just want the port we are
-     * connected to. */
-    orport = conn->port;
-    tor_snprintf(extra_info, 256, "name=%s,fp=%s,"
-        "read_tokens=%d,write_tokens=%d,bw_rate=%d,bw_burst=%d,bw_cap=%d",
-        ri->nickname,
-        fingerprint, TO_OR_CONN(conn)->read_bucket, TO_OR_CONN(conn)->write_bucket,
-        (int)ri->bandwidthrate, (int)ri->bandwidthburst, (int)ri->bandwidthcapacity);
-    kqtime_register(get_kqtime(), conn->s, ipaddr_str, orport, extra_info);
-  }
-  if (ipaddr_str)
-    tor_free(ipaddr_str);
-}
-
 /** Called when our attempt to connect() to another server has just
  * succeeded.
  *
@@ -4644,9 +4653,9 @@ connection_finished_connecting(connection_t *conn)
   switch (conn->type)
     {
     case CONN_TYPE_OR:
-      if(get_kqtime()) {
-        connection_register_kqtime_fd(conn);
-      }
+      //if(get_kqtime()) {
+      //  connection_register_kqtime_fd(conn);
+      //}
       return connection_or_finished_connecting(TO_OR_CONN(conn));
     case CONN_TYPE_EXIT:
       return connection_edge_finished_connecting(TO_EDGE_CONN(conn));

@@ -14,6 +14,7 @@
 
 /* XXXX For buf_datalen in inline function */
 #include "buffers.h"
+void connection_register_kqtime_fd(connection_t *conn);
 
 const char *conn_type_to_string(int type);
 const char *conn_state_to_string(int type, int state);
