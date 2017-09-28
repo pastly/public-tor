@@ -417,12 +417,12 @@ update_socket_written(socket_table_t *table, channel_t *chan, size_t bytes)
  * have to, and we now do this in more than once place in kist_scheduler_run.
  */
 static void
-add_chan_to_readd_list(smartlist_t *to_readd, channel_t *chan)
+add_chan_to_readd_list(smartlist_t **to_readd, channel_t *chan)
 {
-    if (!to_readd) {
-      to_readd = smartlist_new();
+    if (!*to_readd) {
+      *to_readd = smartlist_new();
     }
-    smartlist_add(to_readd, chan);
+    smartlist_add(*to_readd, chan);
 }
 
 /*
@@ -611,7 +611,7 @@ kist_scheduler_run(void)
                  "likely the issue) and stop scheduling it this round.",
                  channel_state_to_string(chan->state));
         chan->scheduler_state = SCHED_CHAN_WAITING_TO_WRITE;
-        add_chan_to_readd_list(to_readd, chan);
+        add_chan_to_readd_list(&to_readd, chan);
         continue;
       }
     }
@@ -660,7 +660,7 @@ kist_scheduler_run(void)
        * in the next scheduling round.
        */
       chan->scheduler_state = SCHED_CHAN_WAITING_TO_WRITE;
-      add_chan_to_readd_list(to_readd, chan);
+      add_chan_to_readd_list(&to_readd, chan);
       log_debug(LD_SCHED, "chan=%" PRIu64 " now waiting_to_write",
                 chan->global_identifier);
     } else {
