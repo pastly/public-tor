@@ -622,6 +622,8 @@ static config_var_t option_vars_[] = {
   VAR("___UsingTestNetworkDefaults", BOOL, UsingTestNetworkDefaults_, "0"),
   V(KQTimeLogFile,               FILENAME, NULL),
   V(KQTimeDevice, STRING, NULL),
+  V(KQTimeLogInterval, INT, "60"),
+  V(KQTimeMaintInterval, INT, "10"),
 
   { NULL, CONFIG_TYPE_OBSOLETE, 0, NULL }
 };

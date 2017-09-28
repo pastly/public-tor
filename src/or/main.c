@@ -216,6 +216,7 @@ int quiet_level = 0;
 
 KQTime* global_kqtime = NULL;
 static struct event *log_kqtime_ev = NULL;
+static struct event *maint_kqtime_ev = NULL;
 
 /********* END VARIABLES ************/
 
@@ -2614,6 +2615,15 @@ tell_kqtime_to_log(evutil_socket_t fd, short events, void *arg)
   kqtime_log_stats(get_kqtime());
 }
 
+static void
+tell_kqtime_to_maint(evutil_socket_t fd, short events, void *arg)
+{
+  (void) fd;
+  (void) events;
+  (void) arg;
+  kqtime_perform_maint(get_kqtime());
+}
+
 /**
  * Run the main loop a single time. Return 0 for "exit"; -1 for "exit with
  * error", and 1 for "run this again."
@@ -2622,6 +2632,7 @@ static int
 run_main_loop_once(void)
 {
   int loop_result;
+  struct timeval run_interval;
 
   if (nt_service_is_stopping())
     return 0;
@@ -2631,8 +2642,14 @@ run_main_loop_once(void)
         get_options()->KQTimeDevice, NULL);
     log_kqtime_ev = tor_event_new(tor_libevent_get_base(), -1, EV_PERSIST,
         tell_kqtime_to_log, NULL);
-    struct timeval run_interval = {3, 0};
+    maint_kqtime_ev = tor_event_new(tor_libevent_get_base(), -1, EV_PERSIST,
+        tell_kqtime_to_maint, NULL);
+    run_interval.tv_sec = get_options()->KQTimeLogInterval;
+    run_interval.tv_usec = 0;
     event_add(log_kqtime_ev, &run_interval);
+    run_interval.tv_sec = get_options()->KQTimeMaintInterval;
+    run_interval.tv_usec = 0;
+    event_add(maint_kqtime_ev, &run_interval);
   }
 
 #ifndef _WIN32
