@@ -28,6 +28,10 @@ struct ed25519_keypair_t;
 #define HS_VERSION_MIN HS_VERSION_TWO
 #define HS_VERSION_MAX HS_VERSION_THREE
 
+#define SATIS_SIG_INTERVAL_MIN 60
+#define SATIS_SIG_INTERVAL_DEF 60*60*24
+#define SATIS_SIG_INTERVAL_MAX 60*60*24*3
+
 /** Try to maintain this many intro points per service by default. */
 #define NUM_INTRO_POINTS_DEFAULT 3
 /** Maximum number of intro points per generic and version 2 service. */

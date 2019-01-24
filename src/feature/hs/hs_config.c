@@ -422,6 +422,36 @@ config_generic_service(const config_line_t *line_,
       have_version = service->config.hs_version_explicitly_set = 1;
       continue;
     }
+    if (!strcasecmp(line->key, "HiddenServiceSatisSig")) {
+      config->do_satis_sig =
+        (unsigned int) helper_parse_uint64(line->key, line->value, 0, 1, &ok);
+      if (!ok) {
+        log_warn(LD_CONFIG, "Couldn't parse HiddenServiceSatisSig value %s",
+            line->value);
+      }
+      continue;
+    }
+    if (!strcasecmp(line->key, "HiddenServiceSatisSigInterval")) {
+        config->satis_interval =
+            (unsigned int) helper_parse_uint64(line->key, line->value,
+                    SATIS_SIG_INTERVAL_MIN, SATIS_SIG_INTERVAL_MAX, &ok);
+        if (!ok) {
+            log_warn(LD_CONFIG, "Couldn't parse HiddenServiceSatisSigInterval "
+                   "value %s", line->value);
+        }
+        continue;
+    }
+    if (!strcasecmp(line->key, "HiddenServiceSatisDomain")) {
+      config->satis_domain = tor_strdup(line->value);
+      log_info(LD_CONFIG, "HiddenService with domain %s", line->value);
+      continue;
+    }
+    if (!strcasecmp(line->key, "HiddenServiceSatisFingerprint")) {
+      config->satis_fingerprint = tor_strdup(line->value);
+      log_info(LD_CONFIG, "HiddenService with TLS fingerprint %s",
+          line->value);
+      continue;
+    }
     /* Virtual port. */
     if (!strcasecmp(line->key, "HiddenServicePort")) {
       char *err_msg = NULL;
@@ -505,6 +535,10 @@ config_generic_service(const config_line_t *line_,
                "HiddenServiceNonAnonymousMode 0, or set ClientUseIPv4 1.");
       goto err;
     }
+  }
+
+  if (!config->satis_interval) {
+      config->satis_interval = SATIS_SIG_INTERVAL_DEF;
   }
 
   /* Success */
