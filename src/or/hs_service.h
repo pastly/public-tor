@@ -156,6 +156,13 @@ typedef struct hs_service_config_t {
    * if the service is ephemeral. Specified by HiddenServiceDir option. */
   char *directory_path;
 
+  /* Domain name for SATIS stuff */
+  char *satis_domain;
+  /* TLS fingerprint for SATIS stuff */
+  char *satis_fingerprint;
+
+  uint64_t satis_interval;
+
   /* The maximum number of simultaneous streams per rendezvous circuit that
    * are allowed to be created. No limit if 0. Specified by
    * HiddenServiceMaxStreams option. */
@@ -183,6 +190,9 @@ typedef struct hs_service_config_t {
 
   /* Is this service ephemeral? */
   unsigned int is_ephemeral : 1;
+
+  /* Whether or not to sign data for SATIS */
+  unsigned int do_satis_sig : 1;
 } hs_service_config_t;
 
 /* Service state. */
@@ -231,6 +241,9 @@ typedef struct hs_service_t {
   hs_service_descriptor_t *desc_current;
   /* Next descriptor. */
   hs_service_descriptor_t *desc_next;
+
+  /* Timestamp of the last time we generated a satis signature */
+  time_t satis_last_sign;
 
   /* XXX: Credential (client auth.) #20700. */
 

@@ -66,6 +66,11 @@
 /* Onion service directory file names. */
 static const char fname_keyfile_prefix[] = "hs_ed25519";
 static const char fname_hostname[] = "hostname";
+static const char fname_satis_sig[] = "satis_sig";
+static const char fname_satis_sig_bad_fp[] = "satis_sig_bad_fp";
+static const char fname_satis_sig_bad_time[] = "satis_sig_bad_time";
+static const char fname_satis_sig_bad_domain[] = "satis_sig_bad_domain";
+static const char fname_satis_sig_bad_sig[] = "satis_sig_bad_sig";
 static const char address_tld[] = "onion";
 
 /* Staging list of service object. When configuring service, we add them to
@@ -951,6 +956,261 @@ write_address_to_file(const hs_service_t *service, const char *fname_)
  end:
   tor_free(fname);
   tor_free(addr_buf);
+  return ret;
+}
+
+static int
+write_satis_sig_to_file_impl(const char *fname, uint64_t time_center,
+    uint64_t time_window, const char *domain, const char *fingerprint,
+    ed25519_keypair_t *keypair)
+{
+  int ret = -2;
+  uint8_t *msg = NULL;
+  int msg_size = 0;
+  int offset = 0;
+
+  const char magic[] = "satis-guard-----";
+  tor_assert(domain);
+  const uint32_t domain_len = (uint32_t)strlen(domain);
+  const uint32_t domain_len_net = htonl(domain_len);
+  tor_assert(fingerprint);
+  const uint32_t fingerprint_len = (uint32_t)strlen(fingerprint);
+  const uint32_t fingerprint_len_net = htonl(fingerprint_len);
+
+  const uint64_t time_center_net = tor_htonll(time_center);
+  const uint64_t time_window_net = tor_htonll(time_window);
+
+  tor_assert(fname);
+  tor_assert(keypair);
+
+  uint32_t nonce = 0;
+  crypto_rand((char*)&nonce, sizeof(nonce));
+
+  ed25519_signature_t sig;
+
+  /*
+   * magic string
+   * 64bit time of middle of validity window (seconds since 1970)
+   * 64bit width of validity window (seconds)
+   * 32bit nonce
+   * 32bit domain str length
+   * varied domain str
+   * 32bit fingerprint str lenght
+   * varied fingerprint str
+   */
+  msg_size = (int)(strlen(magic) + 2 * sizeof(uint64_t) +
+      2 * sizeof(uint32_t) + domain_len + sizeof(uint32_t) +
+      fingerprint_len + ED25519_SIG_LEN);
+  msg = tor_malloc_zero(msg_size);
+
+  memcpy(msg+offset, magic, strlen(magic));
+  offset += strlen(magic);
+  memcpy(msg+offset, &time_center_net, sizeof(time_center_net));
+  offset += sizeof(time_center_net);
+  memcpy(msg+offset, &time_window_net, sizeof(time_window_net));
+  offset += sizeof(time_window_net);
+  memcpy(msg+offset, &nonce, sizeof(nonce));
+  offset += sizeof(nonce);
+  memcpy(msg+offset, &domain_len_net, sizeof(domain_len_net));
+  offset += sizeof(domain_len_net);
+  memcpy(msg+offset, domain, domain_len);
+  offset += domain_len;
+  memcpy(msg+offset, &fingerprint_len_net, sizeof(fingerprint_len_net));
+  offset += sizeof(fingerprint_len_net);
+  memcpy(msg+offset, fingerprint, fingerprint_len);
+  offset += fingerprint_len;
+
+  tor_assert(offset + ED25519_SIG_LEN == msg_size);
+
+  ret = ed25519_sign(&sig, msg, offset, keypair);
+  if (ret != 0) {
+    log_warn(LD_REND, "Unable to sign SATIS data");
+    goto end;
+  }
+  memcpy(msg+offset, sig.sig, ED25519_SIG_LEN);
+  offset += ED25519_SIG_LEN;
+
+  tor_assert(offset == msg_size);
+
+  ret = write_bytes_to_file(fname, (const char*)msg, offset, 1);
+  if (ret != 0) {
+    log_warn(LD_REND, "Unable to write onion service SATIS signature to "
+        "file %s", escaped(fname));
+    goto end;
+  }
+
+  log_notice(LD_REND, "We%s satis sig for domain %s (%u) with TLS fp %s (%u) "
+      "to file %s",
+      ret != 0 ? " had issues when writing" : " successfully wrote",
+      domain, domain_len, fingerprint, fingerprint_len, fname);
+
+  ret = 0;
+
+end:
+  tor_free(msg);
+  return ret;
+}
+
+static int
+write_bad_fingerprint_satis_sig_to_file(hs_service_t *service)
+{
+  char *fname = hs_path_from_filename(service->config.directory_path,
+                                      fname_satis_sig_bad_fp);
+  tor_assert(service);
+  tor_assert(service->satis_last_sign + service->config.satis_interval <
+          (uint64_t)time(NULL));
+
+  int ret = -3;
+
+  const uint64_t time_center = time(NULL);
+  const uint64_t time_window = 7*24*60*60; // 7 days
+
+  const char *fingerprint = "DEADBEEF111111111111";
+
+  char *domain = NULL;
+  tor_asprintf(&domain, "%sonion.%s", service->onion_address,
+      service->config.satis_domain);
+
+  ed25519_keypair_t keypair;
+  keypair.seckey = service->keys.identity_sk;
+  keypair.pubkey = service->keys.identity_pk;
+
+  ret = write_satis_sig_to_file_impl(fname, time_center, time_window, domain,
+      fingerprint, &keypair);
+
+  tor_free(domain);
+  tor_free(fname);
+  return ret;
+}
+
+static int
+write_bad_time_satis_sig_to_file(hs_service_t *service)
+{
+  char *fname = hs_path_from_filename(service->config.directory_path,
+                                      fname_satis_sig_bad_time);
+  tor_assert(service);
+  tor_assert(service->satis_last_sign + service->config.satis_interval <
+          (uint64_t)time(NULL));
+
+  int ret = -3;
+
+  const uint64_t time_center = time(NULL) - 8*24*60*60;
+  const uint64_t time_window = 7*24*60*60; // 7 days
+
+  const char *fingerprint = service->config.satis_fingerprint;
+
+  char *domain = NULL;
+  tor_asprintf(&domain, "%sonion.%s", service->onion_address,
+      service->config.satis_domain);
+
+  ed25519_keypair_t keypair;
+  keypair.seckey = service->keys.identity_sk;
+  keypair.pubkey = service->keys.identity_pk;
+
+  ret = write_satis_sig_to_file_impl(fname, time_center, time_window, domain,
+      fingerprint, &keypair);
+
+  tor_free(domain);
+  tor_free(fname);
+  return ret;
+}
+
+static int
+write_bad_domain_satis_sig_to_file(hs_service_t *service)
+{
+  char *fname = hs_path_from_filename(service->config.directory_path,
+                                      fname_satis_sig_bad_domain);
+  tor_assert(service);
+  tor_assert(service->satis_last_sign + service->config.satis_interval <
+          (uint64_t)time(NULL));
+
+  int ret = -3;
+
+  const uint64_t time_center = time(NULL);
+  const uint64_t time_window = 7*24*60*60; // 7 days
+
+  const char *fingerprint = service->config.satis_fingerprint;
+
+  char *domain = NULL;
+  tor_asprintf(&domain, "%sonion.notmyname.com", service->onion_address);
+
+  ed25519_keypair_t keypair;
+  keypair.seckey = service->keys.identity_sk;
+  keypair.pubkey = service->keys.identity_pk;
+
+  ret = write_satis_sig_to_file_impl(fname, time_center, time_window, domain,
+      fingerprint, &keypair);
+
+  tor_free(domain);
+  tor_free(fname);
+  return ret;
+}
+
+static int
+write_bad_sig_satis_sig_to_file(hs_service_t *service)
+{
+  char *fname = hs_path_from_filename(service->config.directory_path,
+                                      fname_satis_sig_bad_sig);
+  tor_assert(service);
+  tor_assert(service->satis_last_sign + service->config.satis_interval <
+          (uint64_t)time(NULL));
+
+  int ret = -3;
+
+  const uint64_t time_center = time(NULL);
+  const uint64_t time_window = 7*24*60*60; // 7 days
+
+  const char *fingerprint = service->config.satis_fingerprint;
+
+  char *domain = NULL;
+  tor_asprintf(&domain, "%sonion.%s", service->onion_address,
+      service->config.satis_domain);
+
+  ed25519_keypair_t keypair;
+  keypair.seckey = service->keys.identity_sk;
+  keypair.seckey.seckey[0] = 0xde;
+  keypair.seckey.seckey[1] = 0xad;
+  keypair.seckey.seckey[2] = 0xbe;
+  keypair.seckey.seckey[3] = 0xef;
+  keypair.pubkey = service->keys.identity_pk;
+
+  ret = write_satis_sig_to_file_impl(fname, time_center, time_window, domain,
+      fingerprint, &keypair);
+
+  tor_free(domain);
+  tor_free(fname);
+  return ret;
+}
+
+static int
+write_good_satis_sig_to_file(hs_service_t *service)
+{
+  char *fname = hs_path_from_filename(service->config.directory_path,
+                                      fname_satis_sig);
+  tor_assert(service);
+  tor_assert(service->satis_last_sign + service->config.satis_interval <
+          (uint64_t)time(NULL));
+
+  int ret = -3;
+
+  const uint64_t time_center = time(NULL);
+  const uint64_t time_window = 7*24*60*60; // 7 days
+
+  const char *fingerprint = service->config.satis_fingerprint;
+
+  char *domain = NULL;
+  tor_asprintf(&domain, "%sonion.%s", service->onion_address,
+      service->config.satis_domain);
+
+  ed25519_keypair_t keypair;
+  keypair.seckey = service->keys.identity_sk;
+  keypair.pubkey = service->keys.identity_pk;
+
+  ret = write_satis_sig_to_file_impl(fname, time_center, time_window, domain,
+      fingerprint, &keypair);
+
+  tor_free(domain);
+  tor_free(fname);
   return ret;
 }
 
@@ -2643,6 +2903,39 @@ should_service_upload_descriptor(const hs_service_t *service,
   return 0;
 }
 
+static void
+run_satis_sig_event(time_t now)
+{
+    (void)now;
+    FOR_EACH_SERVICE_BEGIN(service) {
+      if (service->config.do_satis_sig &&
+              service->satis_last_sign + service->config.satis_interval <
+              (uint64_t)time(NULL)) {
+          if (write_good_satis_sig_to_file(service) < 0) {
+              log_warn(LD_REND, "Unable to sign satis sig file for %s",
+                      service->onion_address);
+          }
+          if (write_bad_time_satis_sig_to_file(service) < 0) {
+              log_warn(LD_REND, "Unable to sign bad time satis sig "
+                  "file for %s", service->onion_address);
+          }
+          if (write_bad_fingerprint_satis_sig_to_file(service) < 0) {
+              log_warn(LD_REND, "Unable to sign bad fingerprint satis sig "
+                  "file for %s", service->onion_address);
+          }
+          if (write_bad_domain_satis_sig_to_file(service) < 0) {
+              log_warn(LD_REND, "Unable to sign bad domain satis sig "
+                  "file for %s", service->onion_address);
+          }
+          if (write_bad_sig_satis_sig_to_file(service) < 0) {
+              log_warn(LD_REND, "Unable to sign bad sig satis sig "
+                  "file for %s", service->onion_address);
+          }
+          service->satis_last_sign = time(NULL);
+      }
+    } FOR_EACH_SERVICE_END;
+}
+
 /* Scheduled event run from the main loop. Try to upload the descriptor for
  * each service. */
 STATIC void
@@ -3315,6 +3608,8 @@ hs_service_run_scheduled_events(time_t now)
   run_build_circuit_event(now);
   /* Upload the descriptors if needed/possible. */
   run_upload_descriptor_event(now);
+  /* Resign satis data if needed */
+  run_satis_sig_event(now);
 }
 
 /* Initialize the service HS subsystem. */
