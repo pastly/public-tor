@@ -1,0 +1,17 @@
+DataDirectory data
+SocksPort 0
+Socks5Proxy 127.0.0.1:2344
+
+HiddenServiceDir data/hs
+# Probably want yours to be 443 and pointing to your webserver for example.com
+HiddenServicePort 12366
+# Enable generation of signatures
+HiddenServiceSatisSig 1
+# The domain you want to add self-auth to
+# example.com means the self-auth domain would be [56char]onion.example.com
+HiddenServiceSatisDomain example.com
+# The 64 char fingerprint of the TLS certificate example.com uses
+HiddenServiceSatisFingerprint A64CHARTLSFINGERPRINT
+# In seconds, how often should we regenerate the signature file.
+# Can't be less than 60 seconds or more than 3 days
+HiddenServiceSatisSigInterval 86400
