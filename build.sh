@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eu
-#./autogen.sh 
+./autogen.sh
 export CFLAGS="-g"
-#./configure --disable-asciidoc
+./configure --disable-asciidoc
 make -j8 src/app/tor

@@ -1,0 +1,30 @@
+# This file will eventually be created by a script if you're following
+# https://github.com/pastly/satis-selfauth-domains
+# Here is an explanation of each of these new options
+
+## Not a new option. The location of this onion service's data directory
+# HiddenServiceDir data/hs-example.com
+
+## Not a new option. The virtual port this onion service will be listening on,
+## as well as the port it will forward traffic to. You might want this to be
+## 443 if you want to use the actual onion service ([56char].onion) as an
+## Alt-Svc.
+#HiddenServicePort 12366
+
+## Enables generation of signatures
+#HiddenServiceSatisSig 1
+
+## The domain you want to add self-auth to
+## example.com means the self-auth domain would be [56char]onion.example.com
+## When using the update-torrc.sh script, this should be M4_TRAD_DOMAIN in the
+## template. It will get replaced with the configured domain in the script.
+#HiddenServiceSatisDomain example.com
+
+## The 64 char fingerprint of the TLS certificate example.com uses.
+## When using the update-torrc.sh, this should be M4_TLS_FP in the template. It
+## will get replaced with the configured cert's fingerprint.
+#HiddenServiceSatisFingerprint A64CHARTLSFINGERPRINT
+
+## In seconds, how often should we regenerate the signature file.
+## Can't be less than 60 seconds or more than 3 days
+#HiddenServiceSatisSigInterval 86400
