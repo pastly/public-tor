@@ -510,6 +510,15 @@ smartlist_choose_node_by_bandwidth_weights(const smartlist_t *sl,
   scale_array_elements_to_u64(bandwidths_u64, bandwidths_dbl,
                               smartlist_len(sl), NULL);
 
+  int num_to_log = smartlist_len(sl) > 100 ? 100 : smartlist_len(sl);
+  log_debug(
+    LD_OR, "choosing node by bw with rule '%s'. The first %d weights are",
+    bandwidth_weight_rule_to_string(rule), num_to_log);
+  for (int i = 0; i < num_to_log; ++i) {
+      log_debug(LD_OR, "    %g => %"PRIu64, bandwidths_dbl[i], bandwidths_u64[i]);
+  }
+
+
   {
     int idx = choose_array_element_by_weight(bandwidths_u64,
                                              smartlist_len(sl));
