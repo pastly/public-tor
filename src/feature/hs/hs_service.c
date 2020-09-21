@@ -3768,6 +3768,53 @@ hs_service_del_ephemeral(const char *address)
   return -1;
 }
 
+/** Sign the given data with the given onion address's key
+ */
+int
+hs_service_sign_data(
+    const char *address, const uint8_t *data,
+    const size_t data_len, ed25519_signature_t *sig_out)
+{
+  uint8_t version;
+  ed25519_public_key_t pk;
+  ed25519_keypair_t keypair;
+  hs_service_t *service = NULL;
+
+  tor_assert(address);
+
+  if (!data_len) {
+    log_warn(LD_CONFIG, "Asked to sign 0-len data with onion service");
+    goto err;
+  }
+  if (hs_parse_address(address, &pk, NULL, &version) < 0) {
+    log_warn(LD_CONFIG, "Requested malformed v3 onion address for sign_data.");
+    goto err;
+  }
+  if (version != HS_VERSION_THREE) {
+    log_warn(LD_CONFIG, "Requested version of onion address for sign_data "
+                        "is not supported.");
+    goto err;
+  }
+  service = find_service(hs_service_map, &pk);
+  if (service == NULL) {
+    log_warn(LD_CONFIG, "Requested non-existent v3 hidden service for "
+                        "sign_data.");
+    goto err;
+  }
+
+  keypair.seckey = service->keys.identity_sk;
+  keypair.pubkey = service->keys.identity_pk;
+
+  if (ed25519_sign(sig_out, data, data_len, &keypair)) {
+    log_warn(LD_CONFIG, "Unable to sign data with onion service");
+    goto err;
+  }
+
+  return 0;
+err:
+  return -1;
+}
+
 /** Using the ed25519 public key pk, find a service for that key and return the
  * current encoded descriptor as a newly allocated string or NULL if not
  * found. This is used by the control port subsystem. */

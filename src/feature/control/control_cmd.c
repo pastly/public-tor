@@ -248,6 +248,62 @@ config_lines_contain_flag(const config_line_t *lines, const char *flag)
   return line && !strcmp(line->value, "");
 }
 
+static const control_cmd_syntax_t onion_sign_data_syntax = {
+  .min_args=2,
+  .max_args=2,
+};
+
+/** Called when we received a ONION_SIGN_DATA message
+ */
+static int
+handle_control_onion_sign_data(
+    control_connection_t *conn, const control_cmd_args_t *cmd_args)
+{
+  const smartlist_t *args = cmd_args->args;
+  const char *onion_addr = smartlist_get(args, 0);
+  const char *data_base64 = smartlist_get(args, 1);
+  // the maximum possible size the data buf could end up being
+  const size_t data_buf_size = base64_decode_maxsize(strlen(data_base64));
+  uint8_t *data_buf = tor_malloc(data_buf_size);
+  // how much of data_buf actually ends up used (base64 could have padding
+  // bytes)
+  int data_buf_used = 0;
+  ed25519_signature_t sig;
+  // make sure valid onion. when we ask the HS system to sign data, /it/ will
+  // determine if we actually host the onion
+  if (!hs_address_is_valid(onion_addr)) {
+    control_write_endreply(conn, 512, "Malformed Onion Service id");
+    goto out;
+  }
+  // decode
+  if ((data_buf_used = base64_decode(
+         (char *)data_buf, data_buf_size,
+         data_base64, strlen(data_base64))) < 0) {
+    control_write_endreply(conn, 512, "Could not decode base64 data");
+    goto out;
+  }
+  log_notice(LD_CONFIG, "Signed %d data bytes", data_buf_used);
+  // sign
+  if (hs_service_sign_data(onion_addr, data_buf, data_buf_used, &sig)) {
+    control_write_endreply(conn, 551, "Unable to sign data");
+    goto out;
+  }
+  // encode, reusing buffer. +1 on length because base64_encode_size does not
+  // count terminating NULL
+  data_buf = tor_realloc(data_buf, base64_encode_size(ED25519_SIG_LEN, 0)+1);
+  if (base64_encode(
+         (char *)data_buf, base64_encode_size(ED25519_SIG_LEN, 0)+1,
+         (char *)sig.sig, ED25519_SIG_LEN, 0) < 0) {
+    control_write_endreply(conn, 551, "Could not encode signature");
+    goto out;
+  }
+
+  control_printf_endreply(conn, 250, "%s", data_buf);
+out:
+  tor_free(data_buf);
+  return 0;
+}
+
 static const control_cmd_syntax_t setconf_syntax = {
   .max_args=0,
   .accept_keywords=true,
@@ -2370,6 +2426,7 @@ static const control_cmd_def_t CONTROL_COMMANDS[] =
   ONE_LINE(onion_client_auth_add, CMD_FL_WIPE),
   ONE_LINE(onion_client_auth_remove, 0),
   ONE_LINE(onion_client_auth_view, 0),
+  ONE_LINE(onion_sign_data, 0),
 };
 
 /**
